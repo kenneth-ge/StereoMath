@@ -1,0 +1,60 @@
+.toolbar{
+    border-spacing:0;
+  }
+  .toolbar, .toolbar .menu{
+    display: inline-block;
+    position: relative;
+  }
+  .toolbar p{
+    /*height:1.5em;*/
+    padding:.5em;
+    margin:0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .toolbar .button, .toolbar .menu{
+    /*width:100px;*/
+    display: flex;
+    border:2px solid slategray;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .toolbar .menu{
+    border-bottom-color:lightgray;
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+  }
+  .toolbar .menu:hover div{
+    display:block;
+  }
+  .hidden {
+    display: none;
+  }
+  .toolbar .menu div{
+    min-width:50px;
+    padding:1px;
+    position:absolute;
+    top:100%;
+    left:-2px;
+    background-color:white;
+    border:2px solid slategray;
+    border-top:none;
+    border-bottom-left-radius:5px;
+    border-bottom-right-radius:5px;
+  }
+  .toolbar p:hover{
+    background-color:paleturquoise;
+  }
+  .box{
+    background-color:lightgray;
+  }
+  .toolbar p code{
+    display:none;
+    float:right;
+  }
+
+  tr {
+    display: flex;
+
+  }
