@@ -28,6 +28,9 @@
   .toolbar .menu:hover div{
     display:block;
   }
+  .toolbar .menu:focus-within div{
+    display:block;
+  }
   .hidden {
     display: none;
   }

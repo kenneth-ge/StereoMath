@@ -77,6 +77,8 @@ function submitForm() {
     var latexValue = document.getElementById("latex").value;
     var outputValue = document.getElementById("output").value;
 
+    latexValue = answerMathField.latex(); // Get entered math in LaTeX format
+
     // Create a JSON object
     var jsonData = {
         "latex": latexValue,

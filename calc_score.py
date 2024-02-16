@@ -1,7 +1,9 @@
-import pickle
-import os
-import numpy as np
 import math
+import os
+import pickle
+
+import numpy as np
+
 
 def tokenize(input_str):
     symbols = [' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '[', ']', '{', '}', ';', ':', '\'', '\"', ',', '.', '<', '>', '/', '?', '|']
@@ -46,8 +48,8 @@ with open(json_file_path, 'r') as file:
 latex_list = [item["latex"] for item in data]
 output_list = [item["output"] for item in data]
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 transformer = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')
 
@@ -104,11 +106,12 @@ def write_file(output):
     # Write the content to the file
     file.write(json.dumps(output) + '\n')
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
 from datetime import datetime, timedelta
+
 
 # Function to get the current time
 def get_current_time():
@@ -124,6 +127,7 @@ def index():
     return render_template('index.html')
 
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 def to_score(x):
     return (x ** 2) * 100
@@ -197,7 +201,7 @@ def calc_score():
     # if a command is not present at all, we give an extra boost by giving it a rank of -3
 
     latex_score = 0
-    cnt = 0
+    cnt = 1
 
     for token in tokenize(query_latex):
         if token.startswith('\\'):
