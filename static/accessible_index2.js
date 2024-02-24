@@ -34,6 +34,18 @@ let func = {
     focus: "name"
 }
 
+let expr = {
+    name: "expression",
+    fields: ["inside"],
+    data: {},
+    direction: "row",
+    symbol: "",
+    render: (x) => {
+        return `${x["inside"]}`
+    },
+    focus: "inside"
+}
+
 let paren = {
     name: "parentheses",
     fields: ["inside"],
@@ -54,6 +66,7 @@ let list = {
     direction: "row",
     symbol: ",",
     render: (y) => {
+        let total_string = ""
         for(var x of y["..."]){
             total_string += x
             total_string += ","
@@ -85,6 +98,7 @@ let equals = {
 }
 
 let lookup = {
+    "expression": expr,
     "fraction": frac,
     "list": list,
     "parentheses": paren,
@@ -100,7 +114,8 @@ function create_new(type, parent, slot){
     ret.id = parent.id + "." + slot
 
     if(slot == "..."){
-        parent.data[slot].append(ret)
+        parent.data[slot].push(ret)
+        ret.id += "." + (parent.data[slot].length - 1)
     }else{
         parent.data[slot] = ret
     }
@@ -112,12 +127,13 @@ function create_new(type, parent, slot){
     return ret
 }
 
-let expression = { ...paren }; expression.id = "top"
+let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
+expression.render = expr.render
 getById["top"] = expression
 
-function renderDiv(obj){
+function renderDiv(obj, myId="", idx=0){
     if (typeof obj === "string") {
-        return `<input type="text" class="placeholder" myId="${obj.id}" onfocus="amSelecting(this)" value="${obj}"/>`
+        return `<input type="text" class="placeholder" id="${myId}" idx=${idx} myId="${myId}" onfocus="amSelecting(this)" value="${obj}"/>`
     }
 
     let str = 
@@ -130,11 +146,13 @@ function renderDiv(obj){
                     }
                     let field = obj.fields[i]
                     if(field == "..."){
+                        console.log('render here')
                         for(var j = 0; j < obj.data["..."].length; j++){
                             if(j > 0){
                                 total += `<span>${obj.symbol}</span>`
                             }
-                            total += renderDiv(obj.data["..."][j])
+                            console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
+                            total += renderDiv(obj.data["..."][j], obj.id, j)
                         }
                         total += `<button id="${obj.id}.button" myId="${obj.id}" onclick="addToList('${obj.id}')">+</button>`
                     }else{
@@ -169,9 +187,14 @@ function handleValueChanged(input){
 }
 
 function addToList(id){
-    getById[id].data['...'].append("")
+    create_new(expr, getById[id], "...")
 
     rerender()
+
+    waitForElm(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside").then((elm) => {
+        console.log('finished waiting')
+        elm.focus()
+    })
 }
 
 function rerender(){
@@ -229,6 +252,15 @@ rerender()
 function renderLaTeX(element){
     if(typeof element === 'string'){
         return element
+    }
+
+    if(Array.isArray(element)){
+        let vals = []
+        for(var x of element){
+            vals.push(renderLaTeX(x))
+        }
+
+        return vals
     }
 
     console.log(element)
