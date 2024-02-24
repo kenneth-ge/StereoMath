@@ -126,6 +126,14 @@ pending_outputs = []
 def index():
     return render_template('index.html')
 
+@app.route('/accessible')
+def accessible():
+    return render_template('index_accessible.html')
+
+@app.route('/accessible2')
+def accessible2():
+    return render_template('index_accessible2.html')
+
 from sklearn.metrics.pairwise import cosine_similarity
 
 

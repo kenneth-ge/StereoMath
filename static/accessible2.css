@@ -1,0 +1,18 @@
+.block {
+    background-color: #FF6961;
+    display: flex;
+    flex: 1;
+    padding: 5px;
+    margin: 5px;
+}
+
+.placeholder {
+    width: 50px;
+    height: 50px;
+    min-width: 50px; /* Set a minimum width */
+    box-sizing: border-box; /* Include padding and border in the total width */
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 18px; /* Increase font size */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern font stack for headings */
+}
