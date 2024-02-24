@@ -30,7 +30,7 @@ let func = {
     data: {},
     direction: "row",
     symbol: "",
-    render: () => data["name"] + " (" + data["input"] + ")",
+    render: (x) => x["name"] + "(" + x["input"] + ")",
     focus: "name"
 }
 
@@ -40,8 +40,8 @@ let paren = {
     data: {},
     direction: "row",
     symbol: "",
-    render: () => {
-        return `(${data["inside"]})`
+    render: (x) => {
+        return `(${x["inside"]})`
     },
     focus: "inside"
 }
@@ -53,8 +53,8 @@ let list = {
     data: {"...": []},
     direction: "row",
     symbol: ",",
-    render: () => {
-        for(var x of data["..."]){
+    render: (y) => {
+        for(var x of y["..."]){
             total_string += x
             total_string += ","
         }
@@ -70,15 +70,27 @@ let frac = {
     data: {},
     direction: "column",
     symbol: "<hr>",
-    render: () => `\\frac{${data["numerator"]}}{data["numerator"]}`,
+    render: (data) => `\\frac{${data["numerator"]}}{${data["denominator"]}}`,
     focus: "numerator"
+}
+
+let equals = {
+    name: "equals",
+    fields: ["left", "right"],
+    data: {},
+    direction: "row",
+    symbol: "=",
+    render: (data) => `${data["left"]}=${data["right"]}`,
+    focus: "left"
 }
 
 let lookup = {
     "fraction": frac,
     "list": list,
     "parentheses": paren,
-    "function" : func
+    "function" : func,
+    "=": equals,
+    "equals" : equals
 }
 
 let getById = {}
@@ -92,6 +104,8 @@ function create_new(type, parent, slot){
     }else{
         parent.data[slot] = ret
     }
+
+    ret.render = type.render
 
     getById[ret.id] = ret
 
@@ -210,3 +224,21 @@ waitForElm(expression.id + "." + expression.focus).then((elm) => {
 })
 
 rerender()
+
+
+function renderLaTeX(element){
+    if(typeof element === 'string'){
+        return element
+    }
+
+    console.log(element)
+
+    let vals = {}
+    for(var x of element.fields){
+        vals[x] = renderLaTeX(element.data[x])
+    }
+
+    console.log(vals)
+
+    return element.render(vals)
+}

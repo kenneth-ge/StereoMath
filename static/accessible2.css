@@ -4,6 +4,10 @@
     flex: 1;
     padding: 5px;
     margin: 5px;
+    font-size: 18px; /* Increase font size */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern font stack for headings */
+    justify-content: space-around;
+    align-items: center;
 }
 
 .placeholder {
