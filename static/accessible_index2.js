@@ -141,7 +141,7 @@ function renderDiv(obj){
                         if(obj.data[field]){
                             total += renderDiv(obj.data[field])
                         }else{
-                            total += `<input type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)"/>`
+                            total += `<input type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
                         }
                     }
                 }
