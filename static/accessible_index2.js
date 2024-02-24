@@ -29,7 +29,15 @@ let func = {
     fields: ["name", "input"],
     data: {},
     direction: "row",
-    symbol: "",
+    symbol: (x) => {
+        if (x == 1) {
+            return "("
+        }
+        if(x == 2) {
+            return ")"
+        }
+        return ""
+    },
     render: (x) => x["name"] + "(" + x["input"] + ")",
     focus: "name"
 }
@@ -39,7 +47,7 @@ let expr = {
     fields: ["inside"],
     data: {},
     direction: "row",
-    symbol: "",
+    symbol: (x) => "",
     render: (x) => {
         return `${x["inside"]}`
     },
@@ -51,7 +59,7 @@ let paren = {
     fields: ["inside"],
     data: {},
     direction: "row",
-    symbol: "",
+    symbol: (x) => {if (x == 0) return "("; else if (x == 1) return ")"; else return ""},
     render: (x) => {
         return `(${x["inside"]})`
     },
@@ -64,7 +72,7 @@ let list = {
     fields: ["..."],
     data: {"...": []},
     direction: "row",
-    symbol: ",",
+    symbol: (x) => x > 0 ? "," : "",
     render: (y) => {
         let total_string = ""
         for(var x of y["..."]){
@@ -82,7 +90,7 @@ let frac = {
     fields: ["numerator", "denominator"],
     data: {},
     direction: "column",
-    symbol: "<hr>",
+    symbol: (x) => x != 0 ? "<hr>" : "",
     render: (data) => `\\frac{${data["numerator"]}}{${data["denominator"]}}`,
     focus: "numerator"
 }
@@ -92,7 +100,7 @@ let equals = {
     fields: ["left", "right"],
     data: {},
     direction: "row",
-    symbol: "=",
+    symbol: (x) => x == 1 ? "=" : "",
     render: (data) => `${data["left"]}=${data["right"]}`,
     focus: "left"
 }
@@ -121,6 +129,7 @@ function create_new(type, parent, slot){
     }
 
     ret.render = type.render
+    ret.symbol = type.symbol
 
     getById[ret.id] = ret
 
@@ -129,6 +138,7 @@ function create_new(type, parent, slot){
 
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
+expression.symbol = expr.symbol
 getById["top"] = expression
 
 function renderDiv(obj, myId="", idx=0){
@@ -140,16 +150,17 @@ function renderDiv(obj, myId="", idx=0){
         `<div class="block" style="flex-direction:${obj.direction}">
             ${(() => {
                 var total = ""
+                total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
                 for(var i = 0; i < obj.fields.length; i++){
                     if(i > 0){
-                        total += `<span>${obj.symbol}</span>`
+                        total += `<span style="width: 100%; height: 100%;">${obj.symbol(i)}</span>`
                     }
                     let field = obj.fields[i]
                     if(field == "..."){
                         console.log('render here')
                         for(var j = 0; j < obj.data["..."].length; j++){
                             if(j > 0){
-                                total += `<span>${obj.symbol}</span>`
+                                total += `<span>${obj.symbol(j)}</span>`
                             }
                             console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
                             total += renderDiv(obj.data["..."][j], obj.id, j)
@@ -163,6 +174,8 @@ function renderDiv(obj, myId="", idx=0){
                         }
                     }
                 }
+                if(obj.name!="list")
+                    total += `<span>${obj.symbol(obj.fields.length)}</span>`
                 return total
             })()}
         </div>`
