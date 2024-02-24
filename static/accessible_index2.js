@@ -179,7 +179,10 @@ function autocompleteChanged(value) {
     if(wasFocused) wasFocused.focus()
 
     document.getElementById("emptySelection").selected = true
-    equation_picker.value = ""
+    setTimeout(() => {
+        console.log('reset value')
+        equation_picker.value = ""
+    }, 500)
 
     const selectedValue = value;
     // Perform actions based on the selected value
