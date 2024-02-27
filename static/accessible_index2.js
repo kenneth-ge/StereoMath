@@ -164,7 +164,6 @@ function renderDiv(obj, myId="", idx=0){
 
     let str = 
         `<div onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
-            
             ${(() => {
                 var total = ""
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
@@ -174,19 +173,20 @@ function renderDiv(obj, myId="", idx=0){
                     }
                     let field = obj.fields[i]
                     if(field == "..."){
-                        console.log('render here')
+                        //console.log('render here')
                         for(var j = 0; j < obj.data["..."].length; j++){
                             if(j > 0){
                                 total += `<span>${obj.symbol(j)}</span>`
                             }
-                            console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
+                            //console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
                             total += renderDiv(obj.data["..."][j], obj.id, j)
                         }
                         total += `<button tabindex="0" id="${obj.id}.button" myId="${obj.id}" onclick="addToList('${obj.id}')">+</button>`
                     }else{
                         if(obj.data[field]){
-                            total += renderDiv(obj.data[field])
+                            total += renderDiv(obj.data[field], obj.id)
                         }else{
+                            //console.log('this is our id: ' + obj.id)
                             total += `<input aria-label="${field} of ${obj.name}" tabindex="0" type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
                         }
                     }
@@ -203,52 +203,79 @@ function renderDiv(obj, myId="", idx=0){
 let selected = undefined
 
 function amSelecting(input){
-    // TODO: change aria label
     // if selected exists, update aria label
+    /*console.log('was selecting: ')
+    console.log(input)
+    console.log('now selecting: ')
+    console.log(input)*/
+
     if(selected){
         updateAriaLabel(selected)
     }
 
     //input.style.background = "black"
-    console.log('selected: ')
-    console.log(input)
+    //console.log('selected: ')
+    //console.log(input)
 
-    console.log('labeled by: ' + input.getAttribute("aria-labelledby"))
-    console.log(document.getElementById(input.getAttribute("aria-labelledby")))
+    //console.log('labeled by: ' + input.getAttribute("aria-labelledby"))
+    //console.log(document.getElementById(input.getAttribute("aria-labelledby")))
     selected = input
 }
 
-function updateAriaLabel(selected){
-    let div = document.getElementById("hiddenreadalouds")
+// TODO: make updateRec more efficient by reducing duplicate renders
+function updateRec(id){
+    let node = getById[id]
 
-    let id = selected.getAttribute("myID")
+    if(!node){
+        return;
+    }
 
-    if(selected.nodeName == 'INPUT'){
-        console.log("was input")
-        let readaloudID = id + ".readaloud"
-        let readaloudElem = document.getElementById(readaloudID)
+    let readaloudID = id + ".readaloud"
+    let readaloudElem = document.getElementById(readaloudID)
 
-        let latex = renderLaTeX(getById[id])
+    let latex = renderLaTeX(node)
 
+    let label = genAriaLabel(latex, readaloudID)
+
+    if(!readaloudElem){
         let elem = document.createElement("div");
-        let label = genAriaLabel(latex, readaloudID)
-        //console.log('label: ', label)
         elem.id = readaloudID
+
         if(typeof label == 'string')
             elem.innerHTML = label
         else
             elem.innerHTML = label.outerHTML
-        if(!readaloudElem){
-            div.appendChild(elem)
-        }else{
-            readaloudElem.innerHTML = elem.outerHTML
 
-            console.log("new HTML: " + readaloudElem.innerHTML)
-        }
+        hiddenreadalouds.appendChild(elem)
+    }else{
+        if(typeof label == 'string')
+            readaloudElem.innerHTML = label
+        else
+        readaloudElem.innerHTML = label.outerHTML
+
+        //console.log("new HTML: " + readaloudElem.innerHTML)
     }
 
-    if(selected.parent)
-        updateAriaLabel(selected.parent)
+    if(node.parent){
+        console.log('node ' + node.id + ' has parent, go up one level')
+        updateRec(node.parent.id)
+    }
+}
+
+let hiddenreadalouds = undefined
+
+function updateAriaLabel(selected){
+    hiddenreadalouds = document.getElementById("hiddenreadalouds")
+
+    if(selected.nodeName == 'INPUT'){
+        let id = selected.getAttribute("myID")
+
+        if(!id){
+            console.log("Don't update")
+            return
+        }
+        updateRec(id)
+    }
 }
 
 function genAriaLabel(latex, id){
@@ -272,7 +299,7 @@ function addToList(id){
     rerender()
 
     waitForElm(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside").then((elm) => {
-        console.log('finished waiting')
+        //console.log('finished waiting')
         elm.focus()
     })
 }
@@ -303,7 +330,7 @@ function autocompleteChanged(value) {
 
     const selectedValue = value;
     // Perform actions based on the selected value
-    console.log("Picked:", selectedValue);
+    //console.log("Picked:", selectedValue);
 
     let field = selected.getAttribute("field")
     let id = selected.getAttribute("myId")
