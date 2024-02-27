@@ -240,6 +240,7 @@ function updateRec(id){
     if(!readaloudElem){
         let elem = document.createElement("div");
         elem.id = readaloudID
+        elem.style.display = 'none'
 
         if(typeof label == 'string')
             elem.innerHTML = label
