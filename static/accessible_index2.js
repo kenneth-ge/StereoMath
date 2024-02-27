@@ -112,7 +112,7 @@ let plus = {
     data: {},
     direction: "row",
     symbol: (x) => x == 1 ? "+" : "",
-    render: (data) => `${data["left"]}=${data["right"]}`,
+    render: (data) => `${data["left"]}+${data["right"]}`,
     focus: "left"
 }
 
@@ -234,8 +234,10 @@ function updateRec(id){
     let readaloudElem = document.getElementById(readaloudID)
 
     let latex = renderLaTeX(node)
-
     let label = genAriaLabel(latex, readaloudID)
+
+    console.log(latex)
+    console.log(label)
 
     if(!readaloudElem){
         let elem = document.createElement("div");
@@ -258,7 +260,7 @@ function updateRec(id){
     }
 
     if(node.parent){
-        console.log('node ' + node.id + ' has parent, go up one level')
+        //console.log('node ' + node.id + ' has parent, go up one level')
         updateRec(node.parent.id)
     }
 }
@@ -280,10 +282,9 @@ function updateAriaLabel(selected){
 }
 
 function genAriaLabel(latex, id){
-    let mathml = MathJax.tex2chtml(latex, {em: 12, ex: 6, display: true});
-    mathml.id = id
+    let mathml = MathJax.tex2mml(latex)
 
-    return SRE.toSpeech(mathml.outerHTML)
+    return SRE.toSpeech(mathml)
 }
 
 function handleValueChanged(input){
