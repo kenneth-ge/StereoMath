@@ -21,7 +21,8 @@ accessibleAutocomplete.enhanceSelectElement({
     // additional options
     onConfirm: (value) => {
         autocompleteChanged(value)
-    }
+    },
+    hintClasses: null
 })
 
 let func = {
@@ -105,6 +106,16 @@ let equals = {
     focus: "left"
 }
 
+let plus = {
+    name: "plus",
+    fields: ["left", "right"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 1 ? "+" : "",
+    render: (data) => `${data["left"]}=${data["right"]}`,
+    focus: "left"
+}
+
 let lookup = {
     "expression": expr,
     "fraction": frac,
@@ -112,7 +123,10 @@ let lookup = {
     "parentheses": paren,
     "function" : func,
     "=": equals,
-    "equals" : equals
+    "equals" : equals,
+    "+": plus,
+    "plus": plus,
+    "add": plus
 }
 
 let getById = {}
@@ -130,6 +144,7 @@ function create_new(type, parent, slot){
 
     ret.render = type.render
     ret.symbol = type.symbol
+    ret.parent = parent
 
     getById[ret.id] = ret
 
@@ -139,15 +154,17 @@ function create_new(type, parent, slot){
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
 expression.symbol = expr.symbol
+expression.parent = undefined
 getById["top"] = expression
 
 function renderDiv(obj, myId="", idx=0){
     if (typeof obj === "string") {
-        return `<input type="text" class="placeholder" id="${myId}" idx=${idx} myId="${myId}" onfocus="amSelecting(this)" value="${obj}"/>`
+        return `<input tabindex="0" type="text" class="placeholder" id="${myId}" idx=${idx} myId="${myId}" onfocus="amSelecting(this)" value="${obj}"/>`
     }
 
     let str = 
-        `<div class="block" style="flex-direction:${obj.direction}">
+        `<div onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
+            
             ${(() => {
                 var total = ""
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
@@ -165,12 +182,12 @@ function renderDiv(obj, myId="", idx=0){
                             console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
                             total += renderDiv(obj.data["..."][j], obj.id, j)
                         }
-                        total += `<button id="${obj.id}.button" myId="${obj.id}" onclick="addToList('${obj.id}')">+</button>`
+                        total += `<button tabindex="0" id="${obj.id}.button" myId="${obj.id}" onclick="addToList('${obj.id}')">+</button>`
                     }else{
                         if(obj.data[field]){
                             total += renderDiv(obj.data[field])
                         }else{
-                            total += `<input type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
+                            total += `<input aria-label="${field} of ${obj.name}" tabindex="0" type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
                         }
                     }
                 }
@@ -186,17 +203,58 @@ function renderDiv(obj, myId="", idx=0){
 let selected = undefined
 
 function amSelecting(input){
+    // TODO: change aria label
+    // if selected exists, update aria label
+    if(selected){
+        updateAriaLabel(selected)
+    }
+
     //input.style.background = "black"
-    console.log('selected: ' + input)
+    console.log('selected: ')
+    console.log(input)
+
+    console.log('labeled by: ' + input.getAttribute("aria-labelledby"))
+    console.log(document.getElementById(input.getAttribute("aria-labelledby")))
     selected = input
+}
+
+function updateAriaLabel(selected){
+    let div = document.getElementById("hiddenreadalouds")
+
+    let id = selected.getAttribute("myID")
+
+    if(selected.nodeName == 'INPUT'){
+        console.log("was input")
+        let readaloudID = id + ".readaloud"
+        let readaloudElem = document.getElementById(readaloudID)
+
+        let latex = renderLaTeX(getById[id])
+
+        let elem = document.createElement("div");
+        elem.innerHTML = genAriaLabel(latex, readaloudID)
+        if(!readaloudElem){
+            div.appendChild(elem)
+        }else{
+            readaloudElem.innerHTML = elem.outerHTML
+
+            console.log("new HTML: " + readaloudElem.innerHTML)
+        }
+    }
+}
+
+function genAriaLabel(latex, id){
+    let mathml = MathJax.tex2chtml(latex, {em: 12, ex: 6, display: true});
+    mathml.id = id
+
+    return SRE.toSpeech(mathml.outerHTML)
 }
 
 function handleValueChanged(input){
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
-    console.log('hi ' + fieldName)
+    //console.log('hi ' + fieldName)
     getById[id].data[fieldName] = input.value
-    console.log(getById[id])
+    //console.log(getById[id])
 }
 
 function addToList(id){
@@ -263,6 +321,10 @@ rerender()
 
 
 function renderLaTeX(element){
+    if(!element){
+        return ""
+    }
+
     if(typeof element === 'string'){
         return element
     }
@@ -276,14 +338,10 @@ function renderLaTeX(element){
         return vals
     }
 
-    console.log(element)
-
     let vals = {}
     for(var x of element.fields){
         vals[x] = renderLaTeX(element.data[x])
     }
-
-    console.log(vals)
 
     return element.render(vals)
 }
