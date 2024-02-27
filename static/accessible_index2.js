@@ -231,7 +231,13 @@ function updateAriaLabel(selected){
         let latex = renderLaTeX(getById[id])
 
         let elem = document.createElement("div");
-        elem.innerHTML = genAriaLabel(latex, readaloudID)
+        let label = genAriaLabel(latex, readaloudID)
+        //console.log('label: ', label)
+        elem.id = readaloudID
+        if(typeof label == 'string')
+            elem.innerHTML = label
+        else
+            elem.innerHTML = label.outerHTML
         if(!readaloudElem){
             div.appendChild(elem)
         }else{
@@ -240,6 +246,9 @@ function updateAriaLabel(selected){
             console.log("new HTML: " + readaloudElem.innerHTML)
         }
     }
+
+    if(selected.parent)
+        updateAriaLabel(selected.parent)
 }
 
 function genAriaLabel(latex, id){
