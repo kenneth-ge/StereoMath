@@ -307,6 +307,11 @@ function addToList(id){
     let item = document.createElement("div")
     item.innerHTML = divStr
 
+    let sep = document.createElement("span")
+    sep.innerHTML = ","
+
+    if(new_list_item.parent.data['...'].length > 1)
+    document.getElementById(id).insertBefore(sep, document.getElementById(id + '.button'))
     document.getElementById(id).insertBefore(item, document.getElementById(id + '.button'))
 
     rerender(new_list_item)
