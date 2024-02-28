@@ -76,6 +76,7 @@ let list = {
     symbol: (x) => x > 0 ? "," : "",
     render: (y) => {
         let total_string = ""
+        //console.log(y)
         for(var x of y["..."]){
             total_string += x
             total_string += ","
@@ -163,7 +164,7 @@ function renderDiv(obj, myId="", idx=0){
     }
 
     let str = 
-        `<div onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
+        `<div id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
             ${(() => {
                 var total = ""
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
@@ -302,7 +303,14 @@ function handleValueChanged(input){
 function addToList(id){
     let new_list_item = create_new(expr, getById[id], "...")
 
-    //console.log('rerender add to list')
+    let divStr = renderDiv(new_list_item)
+    let item = document.createElement("div")
+    item.innerHTML = divStr
+
+    console.log(item.outerHTML)
+
+    document.getElementById(id).insertBefore(item, document.getElementById(id + '.button'))
+
     rerender(new_list_item)
 
     waitForElm(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside").then((elm) => {
@@ -311,8 +319,6 @@ function addToList(id){
 }
 
 function rerender(item_changed){
-    //console.log('rerender ' + item_changed.id)
-
     updateMemoi(item_changed)
 
     let id = document.getElementById(item_changed.id)
@@ -385,15 +391,6 @@ function updateMemoi(element){
         return element
     }
 
-    if(Array.isArray(element)){
-        let vals = []
-        for(var x of element){
-            vals.push(renderLaTeX(x))
-        }
-
-        element.meomi = vals
-    }
-
     let vals = {}
     for(var x of element.fields){
         vals[x] = renderLaTeX(element.data[x])
@@ -412,6 +409,15 @@ function renderLaTeX(element){
 
     if(typeof element === 'string'){
         return element
+    }
+
+    if(Array.isArray(element)){
+        let vals = []
+        for(var x of element){
+            vals.push(renderLaTeX(x))
+        }
+
+        return vals
     }
 
     return element.memoi
