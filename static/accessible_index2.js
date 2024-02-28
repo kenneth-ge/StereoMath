@@ -236,8 +236,8 @@ function updateRec(id){
     let latex = renderLaTeX(node)
     let label = genAriaLabel(latex, readaloudID)
 
-    console.log(latex)
-    console.log(label)
+    //console.log(latex)
+    //console.log(label)
 
     if(!readaloudElem){
         let elem = document.createElement("div");
@@ -282,6 +282,10 @@ function updateAriaLabel(selected){
 }
 
 function genAriaLabel(latex, id){
+    if(!latex || latex.length == 0){
+        return ""
+    }
+
     let mathml = MathJax.tex2mml(latex)
 
     return SRE.toSpeech(mathml)
@@ -290,25 +294,32 @@ function genAriaLabel(latex, id){
 function handleValueChanged(input){
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
-    //console.log('hi ' + fieldName)
     getById[id].data[fieldName] = input.value
-    //console.log(getById[id])
+
+    updateMemoi(getById[id])
 }
 
 function addToList(id){
-    create_new(expr, getById[id], "...")
+    let new_list_item = create_new(expr, getById[id], "...")
 
-    rerender()
+    //console.log('rerender add to list')
+    rerender(new_list_item)
 
     waitForElm(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside").then((elm) => {
-        //console.log('finished waiting')
         elm.focus()
     })
 }
 
-function rerender(){
-    let blocks = document.getElementById("blocks")
-    blocks.innerHTML = renderDiv(expression)
+function rerender(item_changed){
+    //console.log('rerender ' + item_changed.id)
+
+    updateMemoi(item_changed)
+
+    let id = document.getElementById(item_changed.id)
+
+    // this was causing bugs-- make sure it's not a problem in the future!
+    if(id)
+        id.outerHTML = renderDiv(item_changed)
 }
 
 function autocompleteChanged(value) {
@@ -320,6 +331,8 @@ function autocompleteChanged(value) {
     if(value == ""){
         return;
     }
+
+    //console.log('autocomplete changed')
 
     autocomplete.classList.add("hidden")
     if(wasFocused) wasFocused.focus()
@@ -342,23 +355,28 @@ function autocompleteChanged(value) {
     getById[id].data[field] = newItem
 
     waitForElm(newItem.id + "." + newItem.focus).then((elm) => {
-        console.log('finished waiting')
+        //console.log('finished waiting')
         elm.focus()
     })
 
-    rerender()
+    /*console.log('rerender adding new item')
+    console.log('selection is: ' + value)
+    console.log('item is: ')
+    console.log(newItem)*/
+    rerender(newItem)
     //document.getElementById().focus()
 }
 
 waitForElm(expression.id + "." + expression.focus).then((elm) => {
-    console.log('finished waiting')
+    //console.log('finished waiting')
     elm.focus()
 })
 
-rerender()
+//render expression
+let blocks = document.getElementById("blocks")
+blocks.innerHTML = renderDiv(expression)
 
-
-function renderLaTeX(element){
+function updateMemoi(element){
     if(!element){
         return ""
     }
@@ -373,7 +391,7 @@ function renderLaTeX(element){
             vals.push(renderLaTeX(x))
         }
 
-        return vals
+        element.meomi = vals
     }
 
     let vals = {}
@@ -381,5 +399,20 @@ function renderLaTeX(element){
         vals[x] = renderLaTeX(element.data[x])
     }
 
-    return element.render(vals)
+    element.memoi = element.render(vals)
+
+    if(element.parent)
+        updateMemoi(element.parent)
+}
+
+function renderLaTeX(element){
+    if(!element){
+        return ""
+    }
+
+    if(typeof element === 'string'){
+        return element
+    }
+
+    return element.memoi
 }
