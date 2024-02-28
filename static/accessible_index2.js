@@ -146,6 +146,7 @@ function create_new(type, parent, slot){
     ret.render = type.render
     ret.symbol = type.symbol
     ret.parent = parent
+    ret.slot = slot
 
     getById[ret.id] = ret
 
@@ -164,7 +165,7 @@ function renderDiv(obj, myId="", idx=0){
     }
 
     let str = 
-        `<div id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
+        `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
             ${(() => {
                 var total = ""
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
@@ -223,7 +224,6 @@ function amSelecting(input){
     selected = input
 }
 
-// TODO: make updateRec more efficient by reducing duplicate renders
 function updateRec(id){
     let node = getById[id]
 
@@ -307,15 +307,11 @@ function addToList(id){
     let item = document.createElement("div")
     item.innerHTML = divStr
 
-    console.log(item.outerHTML)
-
     document.getElementById(id).insertBefore(item, document.getElementById(id + '.button'))
 
     rerender(new_list_item)
 
-    waitForElm(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside").then((elm) => {
-        elm.focus()
-    })
+    focusOnFind(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside")
 }
 
 function rerender(item_changed){
@@ -356,14 +352,37 @@ function autocompleteChanged(value) {
     let field = selected.getAttribute("field")
     let id = selected.getAttribute("myId")
 
+    if(!field){
+        // this is an outer div
+
+        //if this is 
+        let node = getById[id]
+        let parent = node.parent
+
+        let newItem = create_new(lookup[value], parent, node.slot)
+        parent[node.slot] = newItem
+        if(lookup[value] == list){
+            newItem.data['...'].push(node)
+        }else{
+            newItem.data[newItem.focus] = node
+        }
+        node.parent = newItem
+
+        rerender(node)
+
+        if(newItem.fields.length > 1)
+            focusOnFind(newItem.id + "." + newItem.fields[1])
+        else
+            focusOnFind(newItem.id + "." + newItem.focus)
+
+        return;
+    }
+
     let newItem = create_new(lookup[value], getById[id], field)
 
     getById[id].data[field] = newItem
 
-    waitForElm(newItem.id + "." + newItem.focus).then((elm) => {
-        //console.log('finished waiting')
-        elm.focus()
-    })
+    focusOnFind(newItem.id + "." + newItem.focus)
 
     /*console.log('rerender adding new item')
     console.log('selection is: ' + value)
@@ -373,10 +392,7 @@ function autocompleteChanged(value) {
     //document.getElementById().focus()
 }
 
-waitForElm(expression.id + "." + expression.focus).then((elm) => {
-    //console.log('finished waiting')
-    elm.focus()
-})
+focusOnFind(expression.id + "." + expression.focus)
 
 //render expression
 let blocks = document.getElementById("blocks")
@@ -421,4 +437,11 @@ function renderLaTeX(element){
     }
 
     return element.memoi
+}
+
+function focusOnFind(id){
+    waitForElm(id).then((elm) => {
+        //console.log('finished waiting')
+        elm.focus()
+    })
 }
