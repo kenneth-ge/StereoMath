@@ -219,7 +219,10 @@ function amSelecting(input){
 
     let focusOn = input.getAttribute('focusOn')
 
-    input.setSelectionRange(focusOn, focusOn)
+    if(focusOn){
+        input.setSelectionRange(focusOn, focusOn)
+        input.removeAttribute('focusOn')
+    }
 
     if(selected){
         updateAriaLabel(selected)
