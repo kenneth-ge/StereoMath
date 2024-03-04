@@ -170,7 +170,7 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
     }
 
     let str = 
-        `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}">
+        `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}" onkeydown="handleKeyDown(event, this)">
             ${(() => {
                 var total = ""
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
@@ -216,6 +216,10 @@ function amSelecting(input){
     console.log(input)
     console.log('now selecting: ')
     console.log(input)*/
+
+    let focusOn = input.getAttribute('focusOn')
+
+    input.setSelectionRange(focusOn, focusOn)
 
     if(selected){
         updateAriaLabel(selected)
@@ -526,9 +530,6 @@ function shiftCaret(delta){
         let numSlots = nextNode.fields.length
         nextField = nextNode.fields[(numSlots + offset2) % numSlots]
 
-        console.log(nextNode)
-        console.log(nextField)
-
         if(!nextNode.data[nextField] || typeof nextNode.data[nextField] == 'string'){
             currentNode = nextNode
         }
@@ -539,9 +540,13 @@ function shiftCaret(delta){
     // blank input field
     nextNodeId = currentNode.id + '.' + nextField
 
-    console.log(nextNodeId)
-
     let associatedInput = document.getElementById(nextNodeId)
+
+    if(delta > 0)
+        associatedInput.setAttribute('focusOn', 0)
+    else
+        associatedInput.setAttribute('focusOn', associatedInput.value.length)
+
     associatedInput.focus()
 
     return Math.sign(delta)
@@ -560,21 +565,39 @@ function handleKeyDown(event, input) {
         if(delta == 0){
             document.getElementById('top.inside').focus()
         }
+
+        event.stopPropagation();
+        event.preventDefault()
     }else if(event.key == 'ArrowDown'){
         shiftCaret(1)
+        event.stopPropagation();
+        event.preventDefault()
     }
 
-    if (event.key === 'ArrowLeft' && cursorPosition <= 0) {
+    if (event.key === 'ArrowLeft') {
         // Cursor is at the beginning of the input, prevent moving left
         //event.preventDefault();
-        let delta = shiftCaret(-1)
 
-        if(delta == 0){
-            document.getElementById('top.inside').focus()
+        if(input.tagName == 'DIV' || cursorPosition <= 0){
+            let delta = shiftCaret(-1)
+
+            if(delta == 0){
+                document.getElementById('top.inside').focus()
+            }
+
+            event.preventDefault()
         }
-    } else if (event.key === 'ArrowRight' && cursorPosition >= input.value.length) {
+
+        event.stopPropagation();
+    } else if (event.key === 'ArrowRight') {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
-        shiftCaret(1)
+        console.log(input.tagName)
+
+        if(input.tagName == 'DIV' || cursorPosition >= input.value.length){
+            shiftCaret(1)
+            event.preventDefault()
+        }
+        event.stopPropagation();
     }
 }
