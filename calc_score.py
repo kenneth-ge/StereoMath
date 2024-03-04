@@ -43,22 +43,27 @@ json_file_path = 'combined.json'
 # Open and read the JSON file
 with open(json_file_path, 'r') as file:
     # Load JSON data from the file
-    data = json.load(file)
+    # data = json.load(file)
+    data = []
+    pass
 
 latex_list = [item["latex"] for item in data]
 output_list = [item["output"] for item in data]
 
-from sentence_transformers import SentenceTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
+#from sentence_transformers import SentenceTransformer
+#from sklearn.feature_extraction.text import TfidfVectorizer
 
-transformer = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')
+# transformer = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')
 
 # Transform the documents
 cmd_cache_path = 'cached_command_orderings.pkl'
 
 if os.path.exists(cmd_cache_path):
-    with open(cmd_cache_path, "rb") as file:
-        command_ordering, cmd_counts = pickle.load(file)
+    command_ordering = []
+    cmd_counts = 0
+    pass 
+    #with open(cmd_cache_path, "rb") as file:
+    #    command_ordering, cmd_counts = pickle.load(file)
 else:
     cmd_counts = {}
 
@@ -87,14 +92,17 @@ for idx, (cnt, token) in enumerate(command_ordering):
 cache_path = 'cached_output_embeddings.pkl'
 
 if os.path.exists(cache_path):
-    with open(cache_path, "rb") as file:
-        output_matrix = pickle.load(file)
-        print(output_matrix.shape)
+    pass 
+    # with open(cache_path, "rb") as file:
+    #    output_matrix = pickle.load(file)
+    #    print(output_matrix.shape)
 else:
+    pass
+"""
     embeddings = transformer.encode(output_list, convert_to_tensor=True, show_progress_bar=True)
     output_matrix = np.vstack(embeddings.cpu().numpy())
     with open(cache_path, "wb") as file:
-        pickle.dump(output_matrix, file)
+        pickle.dump(output_matrix, file)"""
 
 # Specify the file path
 file_path = "new.json"

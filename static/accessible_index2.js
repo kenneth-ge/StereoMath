@@ -159,9 +159,14 @@ expression.symbol = expr.symbol
 expression.parent = undefined
 getById["top"] = expression
 
-function renderDiv(obj, myId="", idx=0){
+
+function renderInput(text, field, name, objID, idx=undefined){
+    return `<input aria-label="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+}
+
+function renderDiv(obj, myId="", field="", name="", idx=0){
     if (typeof obj === "string") {
-        return `<input tabindex="0" type="text" class="placeholder" id="${myId}" idx=${idx} myId="${myId}" onfocus="amSelecting(this)" value="${obj}"/>`
+        return renderInput(obj, field, name, myId, idx)
     }
 
     let str = 
@@ -181,15 +186,16 @@ function renderDiv(obj, myId="", idx=0){
                                 total += `<span>${obj.symbol(j)}</span>`
                             }
                             //console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
-                            total += renderDiv(obj.data["..."][j], obj.id, j)
+                            total += renderDiv(obj.data["..."][j], obj.id, '...', 'list', j)
                         }
                         total += `<button tabindex="0" id="${obj.id}.button" myId="${obj.id}" onclick="addToList('${obj.id}')">+</button>`
                     }else{
                         if(obj.data[field]){
-                            total += renderDiv(obj.data[field], obj.id)
+                            total += renderDiv(obj.data[field], obj.id, field, obj.name)
                         }else{
                             //console.log('this is our id: ' + obj.id)
-                            total += `<input aria-label="${field} of ${obj.name}" tabindex="0" type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
+                            total += renderInput('', field, obj.name, obj.id)
+                            //total += `<input aria-label="${field} of ${obj.name}" tabindex="0" type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
                         }
                     }
                 }
@@ -449,4 +455,126 @@ function focusOnFind(id){
         //console.log('finished waiting')
         elm.focus()
     })
+}
+
+
+/* Helper functions for below */
+function inputToNode(input){
+    return getById[input.getAttribute('myID')]
+}
+
+function nodeToInput(node){
+    return document.getElementById(node.id)
+}
+
+/* Code to handle key down and moving caret */
+function floormod(a, b) {
+    return ((a % b) + b) % b;
+}
+
+pos = 0
+
+function shiftCaret(delta){
+    if(Math.abs(delta) > 1){
+        let cnt = 0
+
+        for(var i = 0; i != delta; i += Math.sign(delta)){
+            let chng = shiftCaret(Math.sign(delta))
+            cnt += chng
+
+            if(chng = 0){
+                return cnt
+            }
+        }
+        return cnt;
+    }
+
+    let id = selected.getAttribute('myID')
+    let field = selected.getAttribute('field')
+
+    // pre-order traversal
+    // actually i guess this is more of a shrub than a tree-- still pre-order traversal
+
+    let currentNode = getById[id]
+    let currentField = field
+
+    // find next input to go left on
+    let offset = delta < 0 ? 0 : 99999
+    while(currentNode.fields.indexOf(currentField) == Math.min(offset, currentNode.fields.length - 1)){
+        currentField = currentNode.slot
+        currentNode = currentNode.parent
+
+        // we're at the root node, but there's only one editable field
+        if(!currentNode){
+            return 0
+        }
+    }
+
+    // if we can't move left/right-- we're already at the leftmost node
+    if(currentNode.fields.length <= 1){
+        return 0
+    }
+
+    // move
+    let nextFieldIdx = (currentNode.fields.indexOf(currentField) + delta) % currentNode.fields.length
+    let nextField = currentNode.fields[nextFieldIdx]
+    let nextNode = currentNode.data[nextField]
+
+    // move down until we get an editable field
+    let offset2 = delta < 0 ? -1 : 0
+    while(typeof nextNode != 'string' && nextNode){
+        let numSlots = nextNode.fields.length
+        nextField = nextNode.fields[(numSlots + offset2) % numSlots]
+
+        console.log(nextNode)
+        console.log(nextField)
+
+        if(!nextNode.data[nextField] || typeof nextNode.data[nextField] == 'string'){
+            currentNode = nextNode
+        }
+
+        nextNode = nextNode.data[nextField]
+    }
+
+    // blank input field
+    nextNodeId = currentNode.id + '.' + nextField
+
+    console.log(nextNodeId)
+
+    let associatedInput = document.getElementById(nextNodeId)
+    associatedInput.focus()
+
+    return Math.sign(delta)
+}
+
+function handleKeyDown(event, input) {
+    const cursorPosition = input.selectionStart;
+
+    /*console.log('hi')
+    console.log(event.key)
+    console.log(input.selectionStart)*/
+
+    if(event.key == 'ArrowUp'){
+        let delta = shiftCaret(-1)
+
+        if(delta == 0){
+            document.getElementById('top.inside').focus()
+        }
+    }else if(event.key == 'ArrowDown'){
+        shiftCaret(1)
+    }
+
+    if (event.key === 'ArrowLeft' && cursorPosition <= 0) {
+        // Cursor is at the beginning of the input, prevent moving left
+        //event.preventDefault();
+        let delta = shiftCaret(-1)
+
+        if(delta == 0){
+            document.getElementById('top.inside').focus()
+        }
+    } else if (event.key === 'ArrowRight' && cursorPosition >= input.value.length) {
+        // Cursor is at the end of the input, prevent moving right
+        //event.preventDefault();
+        shiftCaret(1)
+    }
 }
