@@ -433,7 +433,8 @@ function autocompleteChanged(value) {
         return;
     }else{
         newItem = create_new(lookup[value], getById[id], field)
-
+        newItem.data[newItem.focus] = selected.value
+        
         getById[id].data[field] = newItem
     }
 
