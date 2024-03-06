@@ -128,6 +128,71 @@ let plus = {
     focus: "left"
 }
 
+let minus = {
+    name: "minus",
+    fields: ["left", "right"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 1 ? "-" : "",
+    render: (data) => `${data["left"]}-${data["right"]}`,
+    focus: "left"
+}
+
+let power = {
+    name: "to the power of",
+    fields: ["base", "exponent"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 1 ? "^" : "",
+    render: (data) => `{${data["base"]}}^{${data["exponent"]}}`,
+    focus: "base"
+}
+
+let sum = {
+    name: "sum",
+    fields: ["from", "to", "expression"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 0 ? "Σ" : (x == 1 ? " to " : (x == 2 ? ": " : "")),
+    render: (data) => {
+        let fromTo = ""
+        if(data['from'] || data['to']){
+            fromTo = `\\limits`
+        }
+        if(data['from']){
+            fromTo += `_{${data['from']}}`
+        }
+        if(data['to']){
+            fromTo += `^{${data['to']}}`
+        }
+        return `\\sum${fromTo}{${data['expression']}}`
+    },
+    focus: "from"
+}
+
+let integral = {
+    name: "integral",
+    fields: ["from", "to", "expression", "variable"],
+    data: {},
+    direction: "row",
+    symbol: (x) => {
+        if(x == 0)
+            return "∫"
+        if(x==1)
+            return "→"
+        if(x==3)
+            return "d"
+        return ""
+    },
+    render: (data) => {
+        let fromTo = `_{${data['from']}}^{${data['to']}}`
+        if(!data['from'] && !data['to'])
+            fromTo = ''
+        return `\\int${fromTo} ${data['expression']} \\, d${data['variable']}`
+    },
+    focus: "base"
+}
+
 let lookup = {
     "expression": expr,
     "fraction": frac,
@@ -138,7 +203,16 @@ let lookup = {
     "equals" : equals,
     "+": plus,
     "plus": plus,
-    "add": plus
+    "add": plus,
+    "-": minus,
+    "minus": minus,
+    "subtract": minus,
+    "^": power,
+    "power": power,
+    "exponent": power,
+    "sum": sum,
+    "sigma": sum,
+    "integral": integral
 }
 
 let getById = {}
