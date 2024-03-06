@@ -16,11 +16,22 @@ document.addEventListener("keydown", function(event) {
     }
   });
 
+let oldTime = 0
+
 accessibleAutocomplete.enhanceSelectElement({
     selectElement: document.querySelector('#equation-picker'),
     // additional options
     onConfirm: (value) => {
-        autocompleteChanged(value)
+        // time is necessary or else it will trigger twice in a row
+        const currentTimeMillis = new Date().getTime();
+
+        if(currentTimeMillis - oldTime > 250){
+            oldTime = currentTimeMillis
+            
+            autocompleteChanged(value)
+            //console.log('stuff: ', value)
+            
+        }
     },
     hintClasses: null
 })
@@ -151,6 +162,19 @@ function create_new(type, parent, slot){
     getById[ret.id] = ret
 
     return ret
+}
+
+function updateID(node, parentId=""){
+    if(parentId != "")
+        node.id = parentId + '.' + node.slot
+    getById[node.id] = node
+
+    for(var field of node.fields){
+        if(node.data[field] && typeof node.data[field] != 'string'){
+            // another node
+            updateID(node.data[field], node.id)
+        }
+    }
 }
 
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
@@ -343,6 +367,8 @@ function rerender(item_changed){
 }
 
 function autocompleteChanged(value) {
+    console.log('trigger:', value)
+
     if(!selected){
         alert("No field selected! Don't know where to put this")
         return;
@@ -361,7 +387,7 @@ function autocompleteChanged(value) {
     setTimeout(() => {
         console.log('reset value')
         equation_picker.value = ""
-    }, 500)
+    }, 250)
 
     const selectedValue = value;
     // Perform actions based on the selected value
@@ -370,35 +396,46 @@ function autocompleteChanged(value) {
     let field = selected.getAttribute("field")
     let id = selected.getAttribute("myId")
 
+    let newItem = undefined
+
     if(!field){
         // this is an outer div
-
         //if this is 
         let node = getById[id]
         let parent = node.parent
 
-        let newItem = create_new(lookup[value], parent, node.slot)
-        parent[node.slot] = newItem
+        //console.log('add to this node:')
+        //console.log(node)
+
+        newItem = create_new(lookup[value], parent, node.slot)
+        parent.data[node.slot] = newItem
         if(lookup[value] == list){
             newItem.data['...'].push(node)
         }else{
             newItem.data[newItem.focus] = node
         }
-        node.parent = newItem
 
-        rerender(node)
+        //console.log(newItem)
+
+        node.parent = newItem
+        node.slot = newItem.focus
+
+        //console.log('node after changing:')
+        //console.log(node)
+
+        updateID(newItem)
+        rerender(newItem)
 
         if(newItem.fields.length > 1)
             focusOnFind(newItem.id + "." + newItem.fields[1])
         else
             focusOnFind(newItem.id + "." + newItem.focus)
-
         return;
+    }else{
+        newItem = create_new(lookup[value], getById[id], field)
+
+        getById[id].data[field] = newItem
     }
-
-    let newItem = create_new(lookup[value], getById[id], field)
-
-    getById[id].data[field] = newItem
 
     focusOnFind(newItem.id + "." + newItem.focus)
 
@@ -502,8 +539,15 @@ function shiftCaret(delta){
     // pre-order traversal
     // actually i guess this is more of a shrub than a tree-- still pre-order traversal
 
+    if(!field && delta < 0)
+        return 0
+
     let currentNode = getById[id]
     let currentField = field
+
+    //console.log('-----------')
+    //console.log('starting at: ' + id)
+    //console.log(currentNode)
 
     // find next input to go left on
     let offset = delta < 0 ? 0 : 99999
@@ -511,11 +555,17 @@ function shiftCaret(delta){
         currentField = currentNode.slot
         currentNode = currentNode.parent
 
+        //console.log('next node')
+        //console.log(currentNode)
+
         // we're at the root node, but there's only one editable field
         if(!currentNode){
             return 0
         }
     }
+
+    //console.log('went up to')
+    //console.log(currentNode)
 
     // if we can't move left/right-- we're already at the leftmost node
     if(currentNode.fields.length <= 1){
@@ -526,6 +576,14 @@ function shiftCaret(delta){
     let nextFieldIdx = (currentNode.fields.indexOf(currentField) + delta) % currentNode.fields.length
     let nextField = currentNode.fields[nextFieldIdx]
     let nextNode = currentNode.data[nextField]
+
+    /*console.log('next field idx')
+    console.log(nextFieldIdx)
+    console.log(nextField)
+    console.log(nextNode)
+
+    console.log('current node')
+    console.log(currentNode)*/
 
     // move down until we get an editable field
     let offset2 = delta < 0 ? -1 : 0
@@ -542,6 +600,8 @@ function shiftCaret(delta){
 
     // blank input field
     nextNodeId = currentNode.id + '.' + nextField
+
+    //console.log(nextNodeId)
 
     let associatedInput = document.getElementById(nextNodeId)
 
