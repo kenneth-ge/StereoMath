@@ -311,15 +311,21 @@ function renderInput(text, field, name, objID, idx=undefined){
     return `<input aria-label="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
+function spacer(type, parent){
+    return `<span aria-label="before ${parent.name}" class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
+}
+
 function renderDiv(obj, myId="", field="", name="", idx=0){
     if (typeof obj === "string") {
         return renderInput(obj, field, name, myId, idx)
     }
 
-    let str = 
-        `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}" onkeydown="handleKeyDown(event, this)">
+    let str = `<div style="display: flex;flex-direction:row"> ${spacer('prev', obj)}`
+
+    str += `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}" onkeydown="handleKeyDown(event, this)">
             ${(() => {
                 var total = ""
+                
                 total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
                 for(var i = 0; i < obj.fields.length; i++){
                     if(i > 0){
@@ -353,7 +359,7 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
             })()}
         </div>`
 
-    str += `<span class="divider" tabindex=0 myId="${obj.id}" field="next" onkeydown="handleKeyDown(event, this)"></span>`
+    str += spacer('next', obj) + '</div>'
 
     return str
 }
@@ -642,6 +648,10 @@ function floormod(a, b) {
 pos = 0
 
 function shiftCaret(delta){
+    if(delta == 0){
+        return 0
+    }
+
     if(Math.abs(delta) > 1){
         let cnt = 0
 
@@ -659,81 +669,120 @@ function shiftCaret(delta){
     let id = selected.getAttribute('myID')
     let field = selected.getAttribute('field')
 
-    // pre-order traversal
-    // actually i guess this is more of a shrub than a tree-- still pre-order traversal
-
-    if(!field && delta < 0)
-        return 0
-
     let currentNode = getById[id]
     let currentField = field
 
-    //console.log('-----------')
-    //console.log('starting at: ' + id)
-    //console.log(currentNode)
+    let nextNode = undefined
+    let nextFieldIdx = undefined 
+    let nextField = undefined
 
-    // find next input to go left on
-    let offset = delta < 0 ? 0 : 99999
-    while(currentNode.fields.indexOf(currentField) == Math.min(offset, currentNode.fields.length - 1)){
-        currentField = currentNode.slot
-        currentNode = currentNode.parent
+    if(delta < 0){
+        console.log('this is the field', field)
 
-        //console.log('next node')
-        //console.log(currentNode)
-
-        // we're at the root node, but there's only one editable field
-        if(!currentNode){
-            return 0
-        }
-    }
-
-    //console.log('went up to')
-    //console.log(currentNode)
-
-    // if we can't move left/right-- we're already at the leftmost node
-    if(currentNode.fields.length <= 1){
-        return 0
-    }
-
-    // move
-    let nextFieldIdx = (currentNode.fields.indexOf(currentField) + delta) % currentNode.fields.length
-    let nextField = currentNode.fields[nextFieldIdx]
-    let nextNode = currentNode.data[nextField]
-
-    /*console.log('next field idx')
-    console.log(nextFieldIdx)
-    console.log(nextField)
-    console.log(nextNode)
-
-    console.log('current node')
-    console.log(currentNode)*/
-
-    // move down until we get an editable field
-    let offset2 = delta < 0 ? -1 : 0
-    while(typeof nextNode != 'string' && nextNode){
-        let numSlots = nextNode.fields.length
-        nextField = nextNode.fields[(numSlots + offset2) % numSlots]
-
-        if(!nextNode.data[nextField] || typeof nextNode.data[nextField] == 'string'){
-            currentNode = nextNode
+        // left in general
+        nextNode = currentNode
+        nextFieldIdx = currentNode.fields.indexOf(currentField) - 1
+        if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
+            nextField = currentNode.fields[nextFieldIdx]
         }
 
+        console.log(nextNode)
+        if(nextNode == expression && field == 'prev'){
+            console.log('here here')
+            document.getElementById('top').focus()
+            return -1
+        }
+
+        // left onto prev
+        if(nextFieldIdx == -1){
+            nextField = 'prev'
+        }
+
+        // left on next
+        if(field == 'next'){
+            nextNode = currentNode
+            nextFieldIdx = currentNode.fields.length - 1
+            nextField = currentNode.fields[nextFieldIdx]
+        }else if(field == 'prev'){ //left on prev
+            // go up one and then left
+            nextNode = currentNode.parent
+            nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) - 1
+            if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
+                nextField = nextNode.fields[nextFieldIdx]
+            }
+
+            if(nextFieldIdx == -1){ //left from prev to prev
+                nextField = 'prev'
+            }
+
+            if(nextNode == expression){
+                nextField = 'prev'
+            }
+        }
+    }else{
+        // right in general
+        nextNode = currentNode
+        nextFieldIdx = nextNode.fields.indexOf(currentField) + 1
+
+        if(selected.id == 'top'){
+            document.getElementById('top.inside.prev').focus()
+            return 1
+        }
+
+        if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+            nextField = currentNode.fields[nextFieldIdx]
+
+        if(nextFieldIdx == nextNode.fields.length)
+            nextField = 'next'
+
+        if(field == 'prev'){ //right on prev
+            nextFieldIdx = 0
+            nextField = nextNode.fields[0]
+        }else if(field == 'next'){ //right on next
+            // go up
+            nextNode = currentNode.parent
+            nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) + 1
+            if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+                nextField = nextNode.fields[nextFieldIdx]
+
+            if(nextFieldIdx == nextNode.fields.length){
+                nextField = 'next'
+            }
+        }
+    }
+ 
+    // if we already found a selectable
+    if(nextField == 'next' || nextField == 'prev' || (typeof nextNode.data[nextField] == 'string')){
+        let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
+        
+        if(typeof nextNode.data[nextField] == 'string'){
+            if(delta > 0)
+                associatedInput.setAttribute('focusOn', 0)
+            else
+                associatedInput.setAttribute('focusOn', associatedInput.value.length)
+        }
+
+        associatedInput.focus()
+
+        return Math.sign(delta)
+    }
+    
+    // move down until we get to either 'next' or 'prev'
+    if(delta < 0){
         nextNode = nextNode.data[nextField]
+        nextField = 'next'
+
+        let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
+
+        associatedInput.focus()
+    }else{
+        nextNode = nextNode.data[nextField]
+        nextField = 'prev'
+
+        let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
+
+        associatedInput.focus()
     }
-
-    // blank input field
-    nextNodeId = currentNode.id + '.' + nextField
-
-    //console.log(nextNodeId)
-
-    let associatedInput = document.getElementById(nextNodeId)
-
-    if(delta > 0)
-        associatedInput.setAttribute('focusOn', 0)
-    else
-        associatedInput.setAttribute('focusOn', associatedInput.value.length)
-
-    associatedInput.focus()
 
     return Math.sign(delta)
 }
@@ -821,7 +870,7 @@ function handleKeyDown(event, input) {
         // Cursor is at the beginning of the input, prevent moving left
         //event.preventDefault();
 
-        if(input.tagName == 'DIV' || cursorPosition <= 0){
+        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition <= 0){
             let delta = shiftCaret(-1)
 
             if(delta == 0){
@@ -835,7 +884,7 @@ function handleKeyDown(event, input) {
     } else if (event.key === 'ArrowRight') {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
-        if(input.tagName == 'DIV' || cursorPosition >= input.value.length){
+        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length){
             shiftCaret(1)
             event.preventDefault()
         }

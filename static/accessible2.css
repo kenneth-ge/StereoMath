@@ -33,7 +33,7 @@
   .divider {
     width: 5px; /* Adjust the width as needed */
     min-height: 100px;
-    height: 80%; /* Adjust the height as needed */
+    /* height: 80%; Adjust the height as needed */
     background-color: #ccc; /* Default color */
     transition: background-color 0.3s ease; /* Smooth transition */
   }
