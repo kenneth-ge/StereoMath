@@ -138,6 +138,16 @@ let minus = {
     focus: "left"
 }
 
+let times = {
+    name: "times",
+    fields: ["left", "right"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 1 ? "x" : "",
+    render: (data) => `${data["left"]} \\times ${data["right"]}`,
+    focus: "left"
+}
+
 let power = {
     name: "to the power of",
     fields: ["base", "exponent"],
@@ -180,6 +190,8 @@ let integral = {
             return "∫"
         if(x==1)
             return "→"
+        if(x==2)
+            return ":"
         if(x==3)
             return "d"
         return ""
@@ -190,7 +202,27 @@ let integral = {
             fromTo = ''
         return `\\int${fromTo} ${data['expression']} \\, d${data['variable']}`
     },
-    focus: "base"
+    focus: "from"
+}
+
+function genFunction(name){
+    return {
+        name: name,
+        fields: ["input"],
+        data: {},
+        direction: "row",
+        symbol: (x) => {
+            if (x == 0) {
+                return name + "("
+            }
+            if(x == 1) {
+                return ")"
+            }
+            return ""
+        },
+        render: (x) => name + "(" + x["input"] + ")",
+        focus: "input"
+    }
 }
 
 let lookup = {
@@ -207,12 +239,18 @@ let lookup = {
     "-": minus,
     "minus": minus,
     "subtract": minus,
+    "*": times,
+    "multiply": times,
+    "times": times,
     "^": power,
     "power": power,
     "exponent": power,
     "sum": sum,
     "sigma": sum,
-    "integral": integral
+    "integral": integral,
+    "cos": genFunction("cos"),
+    "ln": genFunction("ln"),
+    "log": genFunction("log")
 }
 
 let getById = {}
@@ -233,6 +271,10 @@ function create_new(type, parent, slot){
     ret.parent = parent
     ret.slot = slot
 
+    for(var x of type.fields){
+        ret.data[x] = ''
+    }
+
     getById[ret.id] = ret
 
     return ret
@@ -251,6 +293,12 @@ function updateID(node, parentId=""){
     }
 }
 
+/*let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
+expression.render = expr.render
+expression.symbol = expr.symbol
+expression.parent = undefined
+getById["top"] = expression*/
+
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
 expression.symbol = expr.symbol
@@ -259,7 +307,8 @@ getById["top"] = expression
 
 
 function renderInput(text, field, name, objID, idx=undefined){
-    return `<input aria-label="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    //
+    return `<input aria-label="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -299,9 +348,12 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
                 }
                 if(obj.name!="list")
                     total += `<span>${obj.symbol(obj.fields.length)}</span>`
+
                 return total
             })()}
         </div>`
+
+    str += `<span class="divider" tabindex=0 myId="${obj.id}" field="next" onkeydown="handleKeyDown(event, this)"></span>`
 
     return str
 }
@@ -309,12 +361,6 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
 let selected = undefined
 
 function amSelecting(input){
-    // if selected exists, update aria label
-    /*console.log('was selecting: ')
-    console.log(input)
-    console.log('now selecting: ')
-    console.log(input)*/
-
     let focusOn = input.getAttribute('focusOn')
 
     if(focusOn){
@@ -404,6 +450,8 @@ function genAriaLabel(latex, id){
 }
 
 function handleValueChanged(input){
+    input.style.width = (input.value.length) + 'ch';
+
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
     getById[id].data[fieldName] = input.value
@@ -690,6 +738,63 @@ function shiftCaret(delta){
     return Math.sign(delta)
 }
 
+function collapse(node){
+    let totalText = ""
+
+    //console.log(node)
+    //console.log(node.data)
+
+    for(var x of node.fields){
+        //console.log(x, node.data[x])
+        totalText += node.data[x]
+    }
+    //console.log(totalText)
+    node.parent.data[node.slot] = totalText
+
+    rerender(node.parent)
+}
+
+/**
+ * Node: the node object
+ * Idx: the idx of where we have chosen to delete
+ * Defined like this:
+ *    field1    field2     field3
+ * 0         1           2          3
+ * 
+ */
+function deleteFrom(node, idx){
+    let n = node.fields.length
+
+    if(idx == 0){
+        // delete whole thing, backspace on first
+        announceMessage("collapsing " + node.name)
+        collapse(node)
+        return
+    }
+    if(idx == n){// does nothing
+        return
+    }
+
+    // if node has predefined delete behavior, use that
+    if(node.deleteBehavior && node.deleteBehavior[idx]){
+        node.deleteBehavior[idx](node)
+        return;
+    }
+
+    // otherwise, do default behavior
+    if(node.fields.length == 2){
+        announceMessage("collapsing " + node.name)
+        // collapse
+        collapse(node)
+    }
+
+}
+
+function erase(node){
+    node.parent.data[node.slot] = ''
+    rerender(node.parent)
+}
+
 function handleKeyDown(event, input) {
     const cursorPosition = input.selectionStart;
 
@@ -730,12 +835,58 @@ function handleKeyDown(event, input) {
     } else if (event.key === 'ArrowRight') {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
-        console.log(input.tagName)
-
         if(input.tagName == 'DIV' || cursorPosition >= input.value.length){
             shiftCaret(1)
             event.preventDefault()
         }
         event.stopPropagation();
     }
+
+    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || input.selectionEnd == 0)){
+        event.preventDefault()
+        event.stopPropagation()
+
+        // backspace
+        let id = input.id // id of element including field
+        let myId = input.getAttribute("myid") // id of parent element
+        let field = input.getAttribute("field")
+
+        let node = getById[myId]
+
+        if(field=="next"){
+            erase(node)
+            return
+        }
+
+        let idx = node.fields.indexOf(field)
+
+        console.log('delete from ', node, idx)
+
+        deleteFrom(node, idx)
+    }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || input.selectionStart == input.value.length)){
+        event.preventDefault()
+        event.stopPropagation()
+
+        // delete
+        let id = input.id // id of element including field
+        let myId = input.getAttribute("myid") // id of parent element
+        let field = input.getAttribute("field")
+
+        let node = getById[myId]
+
+        if(field=="next"){
+            shiftCaret(1)
+            erase(getById[selected.getAttribute('myid')])
+            return
+        }
+
+        let idx = node.fields.indexOf(field) + 1
+
+        deleteFrom(node, idx)
+    }
+}
+
+function announceMessage(message) {
+    var alertDiv = document.getElementById('screenReaderAlert');
+    alertDiv.textContent = message;
 }

@@ -29,6 +29,9 @@
                     <option value="-">-</option>
                     <option value="minus">minus</option>
                     <option value="subtract">subtract</option>
+                    <option value="*">*</option>
+                    <option value="times">times</option>
+                    <option value="multiply">multiply</option>
                     <option value="^">^</option>
                     <option value="power">power</option>
                     <option value="exponent">exponent</option>
@@ -36,6 +39,8 @@
                     <option value="sigma">sigma</option>
                     <option value="integral">integral</option>
                     <option value="cos">cos</option>
+                    <option value="ln">ln</option>
+                    <option value="log">log</option>
                 </select>
             </div>
             <br>
@@ -138,5 +143,6 @@
     }
     </script>
     <script src="{{ url_for('static', filename='sre.js') }}"></script>
+    <div aria-live="assertive" id="screenReaderAlert"></div>
     </body>
 </html>
