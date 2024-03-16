@@ -51,7 +51,8 @@ let func = {
         return ""
     },
     render: (x) => x["name"] + "(" + x["input"] + ")",
-    focus: "name"
+    focus: "name",
+    focus2: "input"
 }
 
 let expr = {
@@ -103,50 +104,32 @@ let frac = {
     fields: ["numerator", "denominator"],
     data: {},
     direction: "column",
-    symbol: (x) => x != 0 ? "<hr>" : "",
+    symbol: (x) => x == 1 ? "<hr>" : "",
     render: (data) => `\\frac{${data["numerator"]}}{${data["denominator"]}}`,
-    focus: "numerator"
+    focus: "numerator",
+    focus2: "denominator"
 }
 
-let equals = {
-    name: "equals",
-    fields: ["left", "right"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "=" : "",
-    render: (data) => `${data["left"]}=${data["right"]}`,
-    focus: "left"
+function genBinary(name, symbol){
+    return {
+        name: name,
+        fields: ["left", "right"],
+        data: {},
+        direction: "row",
+        symbol: (x) => x == 1 ? symbol : "",
+        render: (data) => `${data["left"]}${symbol}${data["right"]}`,
+        focus: "left",
+        focus2: "right"
+    }
 }
 
-let plus = {
-    name: "plus",
-    fields: ["left", "right"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "+" : "",
-    render: (data) => `${data["left"]}+${data["right"]}`,
-    focus: "left"
-}
+let equals = genBinary('equals', '=')
 
-let minus = {
-    name: "minus",
-    fields: ["left", "right"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "-" : "",
-    render: (data) => `${data["left"]}-${data["right"]}`,
-    focus: "left"
-}
+let plus = genBinary('plus', '+')
 
-let times = {
-    name: "times",
-    fields: ["left", "right"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "x" : "",
-    render: (data) => `${data["left"]} \\times ${data["right"]}`,
-    focus: "left"
-}
+let minus = genBinary('minus', '-')
+
+let times = genBinary('times', '\\times')
 
 let power = {
     name: "to the power of",
@@ -155,7 +138,19 @@ let power = {
     direction: "row",
     symbol: (x) => x == 1 ? "^" : "",
     render: (data) => `{${data["base"]}}^{${data["exponent"]}}`,
-    focus: "base"
+    focus: "base",
+    focus2: "exponent"
+}
+
+let subscript = {
+    name: "subscript",
+    fields: ["base", "sub"],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 1 ? "^" : "",
+    render: (data) => `{${data["base"]}}_{${data["sub"]}}`,
+    focus: "base",
+    focus2: "sub"
 }
 
 let sum = {
@@ -177,7 +172,8 @@ let sum = {
         }
         return `\\sum${fromTo}{${data['expression']}}`
     },
-    focus: "from"
+    focus: "from",
+    focus2: "expression"
 }
 
 let integral = {
@@ -202,7 +198,8 @@ let integral = {
             fromTo = ''
         return `\\int${fromTo} ${data['expression']} \\, d${data['variable']}`
     },
-    focus: "from"
+    focus: "from",
+    focus2: "expression"
 }
 
 function genFunction(name){
@@ -250,20 +247,24 @@ let lookup = {
     "integral": integral,
     "cos": genFunction("cos"),
     "ln": genFunction("ln"),
-    "log": genFunction("log")
+    "log": genFunction("log"),
+    "_": subscript,
+    "subscript": subscript
 }
 
 let getById = {}
 
 function create_new(type, parent, slot){
     let ret = JSON.parse(JSON.stringify(type))
-    ret.id = parent.id + "." + slot
+    ret.id = (parent ? parent.id : '') + "." + slot
 
     if(slot == "..."){
-        parent.data[slot].push(ret)
+        if(parent)
+            parent.data[slot].push(ret)
         ret.id += "." + (parent.data[slot].length - 1)
     }else{
-        parent.data[slot] = ret
+        if(parent)
+            parent.data[slot] = ret
     }
 
     ret.render = type.render
@@ -303,6 +304,7 @@ let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
 expression.symbol = expr.symbol
 expression.parent = undefined
+expression.data['inside'] = ''
 getById["top"] = expression
 
 
@@ -320,16 +322,17 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
         return renderInput(obj, field, name, myId, idx)
     }
 
-    let str = `<div style="display: flex;flex-direction:row"> ${spacer('prev', obj)}`
+    let str = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block outerblock" onkeydown="handleKeyDown(event, this)">`
+    str += spacer('prev', obj)
 
-    str += `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block" style="flex-direction:${obj.direction}" onkeydown="handleKeyDown(event, this)">
+    str += `<div style="flex-direction:${obj.direction}" class="innerblock">
             ${(() => {
                 var total = ""
                 
-                total += `<span style="width: 100%; height: 100%;">${obj.symbol(0)}</span>`
+                total += `<span style="width: 100%;">${obj.symbol(0)}</span>`
                 for(var i = 0; i < obj.fields.length; i++){
                     if(i > 0){
-                        total += `<span style="width: 100%; height: 100%;">${obj.symbol(i)}</span>`
+                        total += `<span style="width: 100%;">${obj.symbol(i)}</span>`
                     }
                     let field = obj.fields[i]
                     if(field == "..."){
@@ -391,6 +394,7 @@ function updateRec(id){
     let node = getById[id]
 
     if(!node){
+        console.error('warning: no node with id=' + id + ". is this an input field or a span?")
         return;
     }
 
@@ -456,7 +460,7 @@ function genAriaLabel(latex, id){
 }
 
 function handleValueChanged(input){
-    input.style.width = (input.value.length) + 'ch';
+    input.style.minWidth = (input.value.length) + 'ch';
 
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
@@ -494,8 +498,46 @@ function rerender(item_changed){
         id.outerHTML = renderDiv(item_changed)
 }
 
+function reroot(node, parent, value, after){
+    newItem = create_new(lookup[value], parent, node.slot)
+    if(parent)
+        parent.data[node.slot] = newItem
+
+    let toFocusOn = newItem.focus
+    if(after && newItem.focus2){
+    	toFocusOn = newItem.focus2
+    }
+
+    if(lookup[value] == list){
+        newItem.data['...'].push(node)
+    }else{
+        newItem.data[toFocusOn] = node
+    }
+
+    //console.log(newItem)
+
+    node.parent = newItem
+    node.slot = toFocusOn
+
+    //console.log('node after changing:')
+    //console.log(node)
+
+    updateID(newItem)
+    rerender(newItem)
+
+    if(newItem.fields.length > 1){
+        if(after)
+            focusOnFind(newItem.id + "." + newItem.focus)
+        else{
+            focusOnFind(newItem.id + "." + newItem.focus2)
+        }
+    }else{
+        focusOnFind(newItem.id + "." + toFocusOn)
+    }
+}
+
 function autocompleteChanged(value) {
-    console.log('trigger:', value)
+    //console.log('trigger:', value)
 
     if(!selected){
         alert("No field selected! Don't know where to put this")
@@ -513,7 +555,7 @@ function autocompleteChanged(value) {
 
     document.getElementById("emptySelection").selected = true
     setTimeout(() => {
-        console.log('reset value')
+        //console.log('reset value')
         equation_picker.value = ""
     }, 250)
 
@@ -535,30 +577,22 @@ function autocompleteChanged(value) {
         //console.log('add to this node:')
         //console.log(node)
 
-        newItem = create_new(lookup[value], parent, node.slot)
-        parent.data[node.slot] = newItem
-        if(lookup[value] == list){
-            newItem.data['...'].push(node)
-        }else{
-            newItem.data[newItem.focus] = node
-        }
-
-        //console.log(newItem)
-
-        node.parent = newItem
-        node.slot = newItem.focus
-
-        //console.log('node after changing:')
-        //console.log(node)
-
-        updateID(newItem)
-        rerender(newItem)
-
-        if(newItem.fields.length > 1)
-            focusOnFind(newItem.id + "." + newItem.fields[1])
-        else
-            focusOnFind(newItem.id + "." + newItem.focus)
+        reroot(node, parent, value, false)
         return;
+    }else if(selected.tagName == 'SPAN'){
+        if(field == 'next'){
+            let node = getById[id]
+            let parent = node.parent
+
+            reroot(node, parent, value, false)
+            return;
+        }else{
+            let node = getById[id]
+            let parent = node.parent
+
+            reroot(node, parent, value, true)
+            return;
+        }
     }else{
         newItem = create_new(lookup[value], getById[id], field)
         newItem.data[newItem.focus] = selected.value
@@ -566,7 +600,7 @@ function autocompleteChanged(value) {
         getById[id].data[field] = newItem
     }
 
-    focusOnFind(newItem.id + "." + newItem.focus)
+    focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
 
     /*console.log('rerender adding new item')
     console.log('selection is: ' + value)
@@ -623,9 +657,10 @@ function renderLaTeX(element){
     return element.memoi
 }
 
-function focusOnFind(id){
+function focusOnFind(id, selectionStart=0){
     waitForElm(id).then((elm) => {
         //console.log('finished waiting')
+        elm.setAttribute('focusOn', selectionStart)
         elm.focus()
     })
 }
@@ -650,6 +685,10 @@ pos = 0
 function shiftCaret(delta){
     if(delta == 0){
         return 0
+    }
+
+    if(selected.id == 'top.inside' && delta < 0){
+        return 0;
     }
 
     if(Math.abs(delta) > 1){
@@ -677,8 +716,6 @@ function shiftCaret(delta){
     let nextField = undefined
 
     if(delta < 0){
-        console.log('this is the field', field)
-
         // left in general
         nextNode = currentNode
         nextFieldIdx = currentNode.fields.indexOf(currentField) - 1
@@ -686,10 +723,8 @@ function shiftCaret(delta){
             nextField = currentNode.fields[nextFieldIdx]
         }
 
-        console.log(nextNode)
-        if(nextNode == expression && field == 'prev'){
-            console.log('here here')
-            document.getElementById('top').focus()
+        if(nextNode == expression.data['inside'] && field == 'prev'){
+            document.getElementById('top.inside').focus()
             return -1
         }
 
@@ -715,16 +750,20 @@ function shiftCaret(delta){
                 nextField = 'prev'
             }
 
-            if(nextNode == expression){
+            /*if(nextNode == expression.data['inside']){
                 nextField = 'prev'
-            }
+            }*/
         }
     }else{
         // right in general
         nextNode = currentNode
         nextFieldIdx = nextNode.fields.indexOf(currentField) + 1
 
-        if(selected.id == 'top'){
+        if(field == 'next' && currentNode.id == 'top.inside'){
+            return 0;
+        }
+
+        if(selected.id == 'top.inside'){
             document.getElementById('top.inside.prev').focus()
             return 1
         }
@@ -768,6 +807,7 @@ function shiftCaret(delta){
     }
     
     // move down until we get to either 'next' or 'prev'
+
     if(delta < 0){
         nextNode = nextNode.data[nextField]
         nextField = 'next'
@@ -800,7 +840,21 @@ function collapse(node){
     //console.log(totalText)
     node.parent.data[node.slot] = totalText
 
-    rerender(node.parent)
+    if(node.parent.parent)
+        rerender(node.parent.parent)
+    else
+        rerender(node.parent)
+
+    let newElement = document.getElementById(node.parent.id + '.' + node.slot)
+
+    let current = node.parent
+
+    while(current){
+        updateMemoi(current)
+        current = current.parent
+    }
+
+    newElement.focus()
 }
 
 /**
@@ -816,7 +870,7 @@ function deleteFrom(node, idx){
 
     if(idx == 0){
         // delete whole thing, backspace on first
-        announceMessage("collapsing " + node.name)
+        announceMessage("deleting " + node.name)
         collapse(node)
         return
     }
@@ -832,7 +886,7 @@ function deleteFrom(node, idx){
 
     // otherwise, do default behavior
     if(node.fields.length == 2){
-        announceMessage("collapsing " + node.name)
+        announceMessage("deleting " + node.name)
         // collapse
         collapse(node)
     }
@@ -873,10 +927,6 @@ function handleKeyDown(event, input) {
         if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition <= 0){
             let delta = shiftCaret(-1)
 
-            if(delta == 0){
-                document.getElementById('top.inside').focus()
-            }
-
             event.preventDefault()
         }
 
@@ -908,8 +958,6 @@ function handleKeyDown(event, input) {
         }
 
         let idx = node.fields.indexOf(field)
-
-        console.log('delete from ', node, idx)
 
         deleteFrom(node, idx)
     }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || input.selectionStart == input.value.length)){

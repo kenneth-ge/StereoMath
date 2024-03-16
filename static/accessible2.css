@@ -5,9 +5,24 @@
     padding: 5px;
     margin: 5px;
     font-size: 50px; /* Increase font size */
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern font stack for headings */
+    font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
     justify-content: space-around;
     align-items: center;
+}
+
+.outerblock {
+  display: flex; 
+  flex-direction:row; 
+  align-items: stretch;
+  justify-content: center;
+}
+
+.innerblock {
+  display: flex;
+  padding: 5px;
+  margin: 5px;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .placeholder {
@@ -18,7 +33,15 @@
     padding: 8px;
     margin-bottom: 10px;
     font-size: 36px; /* Increase font size */
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern font stack for headings */
+    font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+}
+
+#top\.next {
+  display: none;
+}
+
+#top\.prev {
+  display: none;
 }
 
 [contenteditable=true]:empty:before {
