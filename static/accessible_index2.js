@@ -987,3 +987,7 @@ function announceMessage(message) {
     var alertDiv = document.getElementById('screenReaderAlert');
     alertDiv.textContent = message;
 }
+
+function getlatex(){
+    alert(renderLaTeX(expression))
+}

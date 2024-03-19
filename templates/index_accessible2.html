@@ -45,16 +45,14 @@
                     <option value="subscript">subscript</option>
                 </select>
             </div>
-            <br>
-            <label for="output">Output:</label>
-            <input type="text" id="output" name="output" required>
-            <br>
-            <button type="button" onclick="submitForm()">Submit</button>
         </form>
 
         <div id="blocks">
 
         </div>
+
+        <button id="getlatex" type="button" onclick="getlatex()">Get Latex</button>
+
         <script type="text/javascript" src="{{ url_for('static', filename='util.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='accessible_index2.js') }}"></script>
         
