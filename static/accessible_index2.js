@@ -315,7 +315,7 @@ function renderInput(text, field, name, objID, idx=undefined){
 
 function spacer(type, parent){
     // aria-label="before ${parent.name}" 
-    return `<span class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
+    return `<span aria-hidden="true" role="presentation" class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -323,7 +323,7 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
         return renderInput(obj, field, name, myId, idx)
     }
 
-    let str = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block outerblock" onkeydown="handleKeyDown(event, this)">`
+    let str = `<div role="button" myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block outerblock" onkeydown="handleKeyDown(event, this)">`
     str += spacer('prev', obj)
 
     str += `<div style="flex-direction:${obj.direction}" class="innerblock">
