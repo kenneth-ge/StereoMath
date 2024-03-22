@@ -310,7 +310,7 @@ getById["top"] = expression
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
-    return `<input tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    return `<input description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent){
@@ -749,6 +749,7 @@ function shiftCaret(delta){
         if(nextNode == expression.data['inside'] && field == 'prev'){
             document.getElementById('top.inside').focus()
             switchTone()
+
             return -1
         }
 
@@ -789,7 +790,7 @@ function shiftCaret(delta){
 
         if(selected.id == 'top.inside'){
             document.getElementById('top.inside.prev').focus()
-            switchTone()
+            beforeTone()
             return 1
         }
 
@@ -940,6 +941,11 @@ function handleKeyDown(event, input) {
     /*console.log('hi')
     console.log(event.key)
     console.log(input.selectionStart)*/
+
+    if(event.key == 'Insert'){
+        //narrate this element
+        announceMessage(input.getAttribute('description'))
+    }
 
     if(event.key == 'ArrowUp'){
         let delta = shiftCaret(-1)
