@@ -1,0 +1,23 @@
+{
+  "name": "nllatex_survey",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kenneth-ge/NL-Latex-Survey.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kenneth-ge/NL-Latex-Survey/issues"
+  },
+  "homepage": "https://github.com/kenneth-ge/NL-Latex-Survey#readme",
+  "dependencies": {
+    "ejs": "^3.1.9",
+    "express": "^4.19.1"
+  }
+}

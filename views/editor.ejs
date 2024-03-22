@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.css" integrity="sha512-vPg9GqsZZ4LHv9BkFfZSXt7y4D7YaARPU2JFmpZug4EgtJJrumytMAFZkNSk2LSyqWir0TNbh2tBq7UJIMxvlA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js" integrity="sha512-Qsh05D07P6dURSZn8Qk+j8GI7cEK0OhXleZvTofmucwoDSkBC0juWf1401JdSE8os2kWEezMu7e9mlnszm3yEw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <link rel="stylesheet" href="toolbar.css" />
+        <link rel="stylesheet" href="accessible-autocomplete.min.css" />
+        <script type="text/javascript" src="accessible-autocomplete.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <link rel="stylesheet" href="accessible2.css" />
+        <audio id="tone" src="marimba.wav"></audio>
+        <audio id="before" src="lowc.ogg"></audio>
+        <audio id="after" src="highe.ogg"></audio>
+    </head>
+    <body>
+        <form id="myForm">
+            <div id="autocomplete" class="hidden" >
+                <label for="equation-picker">Pick an expression: </label>
+                <select id="equation-picker">
+                    <option id="emptySelection" selected="true" style='display: none'></option>
+                    <option value="fraction">fraction</option>
+                    <option value="list">list</option>
+                    <option value="parentheses">parentheses</option>
+                    <option value="function">function</option>
+                    <option value="=">=</option>
+                    <option value="equals">equals</option>
+                    <option value="+">+</option>
+                    <option value="plus">plus</option>
+                    <option value="add">add</option>
+                    <option value="-">-</option>
+                    <option value="minus">minus</option>
+                    <option value="subtract">subtract</option>
+                    <option value="*">*</option>
+                    <option value="times">times</option>
+                    <option value="multiply">multiply</option>
+                    <option value="^">^</option>
+                    <option value="power">power</option>
+                    <option value="exponent">exponent</option>
+                    <option value="sum">sum</option>
+                    <option value="sigma">sigma</option>
+                    <option value="integral">integral</option>
+                    <option value="cos">cos</option>
+                    <option value="ln">ln</option>
+                    <option value="log">log</option>
+                    <option value="_">_</option>
+                    <option value="subscript">subscript</option>
+                </select>
+            </div>
+        </form>
+
+        <div id="blocks">
+
+        </div>
+
+        <button id="getlatex" type="button" onclick="getlatex()">Get Latex</button>
+
+        <script type="text/javascript" src="util.js"></script>
+        <script type="text/javascript" src="accessible_index2.js"></script>
+        
+        <div style="display: hidden;" id="hiddenreadalouds"></div> <!-- style="display: hidden;" -->
+        <script>
+            var MQ = MathQuill.getInterface(2);
+            var answerSpan = document.getElementById('latex');
+            var answerMathField = MQ.MathField(answerSpan, {
+                handlers: {
+                    edit: function() {
+                        var enteredMath = answerMathField.latex(); // Get entered math in LaTeX format
+                        document.querySelector("button").addEventListener("click", () => {
+                            document.getElementById("si_suvat_equation").innerHTML = 
+                        String.raw`<span>$$\begin{gather} s = ut + \frac{1}{2}  at^{2}\\ \notag \end{gather}$$</span>`;
+                            MathJax.typeset();
+                        });
+                        console.log(enteredMath)
+                    }
+                }
+            });
+        </script>
+        <script src="index.js"></script>
+<script type="text/javascript">
+    var ed = answerMathField
+
+    var items = document.querySelectorAll('.mathquill-embedded-latex');
+    items.forEach(item => {
+        MQ.StaticMath(item);
+    });
+
+    items = document.querySelectorAll('table div');
+    items.forEach(item => {
+        item.classList.add('hidden');
+    });
+
+    $(document).ready(function () {
+        $('td').mouseenter(function () {
+            //ed.redraw();
+        });
+        /*setTimeout(function () {
+            $('.mathquill-rendered-math').mathquill('redraw');
+        }, 1000);*/
+    });
+
+    $('.toolbar').click(function (e) {
+        var latex = $(e.target).closest('p').children('code').text();
+        if (latex){
+            console.log(latex)
+            ed.write(latex).focus();
+        }
+    });
+    $('.toolbar').keydown(function (e) {
+        if (event.keyCode === 32) {
+            event.preventDefault();
+        }
+        // If enter is pressed, activate the button
+        else if (event.keyCode === 13) {
+            event.preventDefault();
+            var latex = $(e.target).closest('p').children('code').text();
+            if (latex){
+                console.log(latex)
+                ed.write(latex).focus();
+            }
+        }
+    });
+    $('.toolbar').keyup(function (e) {
+        if (event.keyCode === 32) {
+            event.preventDefault();
+            var latex = $(e.target).closest('p').children('code').text();
+            if (latex){
+                console.log(latex)
+                ed.write(latex).focus();
+            }
+        }
+    });
+
+    waitForElm(expression.id + "." + expression.focus).then((elm) => {
+    console.log('finished waiting')
+    elm.focus()
+})
+</script>
+<script type="text/x-sre-config">
+    {
+    "json": "https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.0-beta.8/lib/mathmaps/",
+    "xpath": "https://cdn.jsdelivr.net/gh/google/wicked-good-xpath@master/dist/wgxpath.install.js",
+    "domain": "mathspeak",
+    "style": "sbrief"
+    }
+    </script>
+    <script src="sre.js"></script>
+    <div aria-live="assertive" id="screenReaderAlert"></div>
+    </body>
+</html>

@@ -309,12 +309,13 @@ getById["top"] = expression
 
 
 function renderInput(text, field, name, objID, idx=undefined){
-    //
-    return `<input aria-label="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    // aria-label="${field} of ${name}"
+    return `<input tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent){
-    return `<span aria-label="before ${parent.name}" class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
+    // aria-label="before ${parent.name}" 
+    return `<span class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -680,6 +681,28 @@ function floormod(a, b) {
     return ((a % b) + b) % b;
 }
 
+let tone = document.getElementById('tone')
+let before = document.getElementById('before')
+let after = document.getElementById('after')
+
+function play(thing){
+    thing.currentTime = 0
+    thing.play()
+}
+
+function switchTone(){
+    play(tone)
+}
+
+function beforeTone(){
+    play(before)
+}
+
+function afterTone(){
+    play(after)
+}
+
+
 pos = 0
 
 function shiftCaret(delta){
@@ -725,6 +748,7 @@ function shiftCaret(delta){
 
         if(nextNode == expression.data['inside'] && field == 'prev'){
             document.getElementById('top.inside').focus()
+            switchTone()
             return -1
         }
 
@@ -765,6 +789,7 @@ function shiftCaret(delta){
 
         if(selected.id == 'top.inside'){
             document.getElementById('top.inside.prev').focus()
+            switchTone()
             return 1
         }
 
@@ -803,6 +828,13 @@ function shiftCaret(delta){
 
         associatedInput.focus()
 
+        if(nextField == 'next'){
+            afterTone()
+        }else if(nextField == 'prev'){
+            beforeTone()
+        }else{
+            switchTone()
+        }
         return Math.sign(delta)
     }
     
@@ -815,6 +847,8 @@ function shiftCaret(delta){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
         associatedInput.focus()
+
+        afterTone()
     }else{
         nextNode = nextNode.data[nextField]
         nextField = 'prev'
@@ -822,6 +856,8 @@ function shiftCaret(delta){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
         associatedInput.focus()
+
+        beforeTone()
     }
 
     return Math.sign(delta)
