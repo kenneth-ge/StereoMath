@@ -1,0 +1,68 @@
+.block {
+    background-color: #FF6961;
+    display: flex;
+    flex: 1;
+    padding: 5px;
+    margin: 5px;
+    font-size: 50px; /* Increase font size */
+    font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+    justify-content: space-around;
+    align-items: center;
+}
+
+.outerblock {
+  display: flex; 
+  flex-direction:row; 
+  align-items: stretch;
+  justify-content: center;
+}
+
+.innerblock {
+  display: flex;
+  padding: 5px;
+  margin: 5px;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.placeholder {
+    height: 50px;
+    width: 50px;
+    min-width: 50px; /* Set a minimum width */
+    box-sizing: content-box;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 36px; /* Increase font size */
+    font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+}
+
+#top\.next {
+  display: none;
+}
+
+#top\.prev {
+  display: none;
+}
+
+[contenteditable=true]:empty:before {
+    content: attr(placeholder);
+    color:gray;
+  }
+  /* found this online --- it prevents the user from being able to make a (visible) newline */
+  [contenteditable=true] br{
+    display:none;
+  }
+
+  .divider {
+    width: 5px; /* Adjust the width as needed */
+    min-height: 100px;
+    /* height: 80%; Adjust the height as needed */
+    background-color: #ccc; /* Default color */
+    transition: background-color 0.3s ease; /* Smooth transition */
+  }
+  
+  .divider:hover,
+  .divider:focus {
+    background-color: orange; /* Color on hover or focus */
+  }
+  
