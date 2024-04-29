@@ -6,10 +6,30 @@ let wasFocused = undefined
 document.addEventListener("keydown", function(event) {
     // Load element picker
     if (event.ctrlKey && event.code === "Space") {
-      autocomplete.classList.remove("hidden")
-      equation_picker = document.getElementById("equation-picker")
-      wasFocused = document.activeElement
-      equation_picker.focus()
+        equation_picker = document.getElementById("equation-picker")
+        autocomplete.classList.remove("hidden")
+        wasFocused = document.activeElement
+
+        equation_picker.focus()
+
+        if (selected && selected.tagName && selected.tagName.toLowerCase() === 'input' && selected.type.toLowerCase() === 'text'){
+            let text = selected.value
+            let doneOnce = false
+
+            setTimeout(() => {
+                equation_picker.value = text
+            }, 50)
+
+            // copy text over from current input field into equation picker
+            /*equation_picker.addEventListener('focus', function() {
+                // Call your function when the input element receives focus
+                if(!doneOnce){
+                    doneOnce = true
+
+                    equation_picker.value = text
+                }
+            });*/
+        }
     }
     if(event.code == "Escape"){
         // leave select
@@ -79,7 +99,7 @@ document.addEventListener("keydown", function(event) {
             count++
         }
 
-        isSpatialMode = false
+        //isSpatialMode = false
         topInputs[best].focus()
     }
   });
@@ -103,222 +123,6 @@ accessibleAutocomplete.enhanceSelectElement({
     },
     hintClasses: null
 })
-
-let func = {
-    name: "function",
-    fields: ["name", "input"],
-    data: {},
-    direction: "row",
-    symbol: (x) => {
-        if (x == 1) {
-            return "("
-        }
-        if(x == 2) {
-            return ")"
-        }
-        return ""
-    },
-    render: (x) => x["name"] + "(" + x["input"] + ")",
-    focus: "name",
-    focus2: "input"
-}
-
-let expr = {
-    name: "expression",
-    fields: ["inside"],
-    data: {},
-    direction: "row",
-    symbol: (x) => "",
-    render: (x) => {
-        return `${x["inside"]}`
-    },
-    focus: "inside"
-}
-
-let paren = {
-    name: "parentheses",
-    fields: ["inside"],
-    data: {},
-    direction: "row",
-    symbol: (x) => {if (x == 0) return "("; else if (x == 1) return ")"; else return ""},
-    render: (x) => {
-        return `(${x["inside"]})`
-    },
-    focus: "inside"
-}
-
-//variable length list
-let list = {
-    name: "list",
-    fields: ["..."],
-    data: {"...": []},
-    direction: "row",
-    symbol: (x) => x > 0 ? "," : "",
-    render: (y) => {
-        let total_string = ""
-        //console.log(y)
-        for(var x of y["..."]){
-            total_string += x
-            total_string += ","
-        }
-        total_string = total_string.slice(0, -1);  // Output: removes last comma
-        return total_string
-    },
-    focus: "button"
-}
-
-let frac = {
-    name: "fraction",
-    fields: ["numerator", "denominator"],
-    data: {},
-    direction: "column",
-    symbol: (x) => x == 1 ? "<hr>" : "",
-    render: (data) => `\\frac{${data["numerator"]}}{${data["denominator"]}}`,
-    focus: "numerator",
-    focus2: "denominator"
-}
-
-function genBinary(name, symbol){
-    return {
-        name: name,
-        fields: ["left", "right"],
-        data: {},
-        direction: "row",
-        symbol: (x) => x == 1 ? symbol : "",
-        render: (data) => `${data["left"]}${symbol}${data["right"]}`,
-        focus: "left",
-        focus2: "right"
-    }
-}
-
-let equals = genBinary('equals', '=')
-
-let plus = genBinary('plus', '+')
-
-let minus = genBinary('minus', '-')
-
-let times = genBinary('times', '\\times')
-
-let power = {
-    name: "to the power of",
-    fields: ["base", "exponent"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "^" : "",
-    render: (data) => `{${data["base"]}}^{${data["exponent"]}}`,
-    focus: "base",
-    focus2: "exponent"
-}
-
-let subscript = {
-    name: "subscript",
-    fields: ["base", "sub"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 1 ? "^" : "",
-    render: (data) => `{${data["base"]}}_{${data["sub"]}}`,
-    focus: "base",
-    focus2: "sub"
-}
-
-let sum = {
-    name: "sum",
-    fields: ["from", "to", "expression"],
-    data: {},
-    direction: "row",
-    symbol: (x) => x == 0 ? "Σ" : (x == 1 ? " to " : (x == 2 ? ": " : "")),
-    render: (data) => {
-        let fromTo = ""
-        if(data['from'] || data['to']){
-            fromTo = `\\limits`
-        }
-        if(data['from']){
-            fromTo += `_{${data['from']}}`
-        }
-        if(data['to']){
-            fromTo += `^{${data['to']}}`
-        }
-        return `\\sum${fromTo}{${data['expression']}}`
-    },
-    focus: "from",
-    focus2: "expression"
-}
-
-let integral = {
-    name: "integral",
-    fields: ["from", "to", "expression", "variable"],
-    data: {},
-    direction: "row",
-    symbol: (x) => {
-        if(x == 0)
-            return "∫"
-        if(x==1)
-            return "→"
-        if(x==2)
-            return ":"
-        if(x==3)
-            return "d"
-        return ""
-    },
-    render: (data) => {
-        let fromTo = `_{${data['from']}}^{${data['to']}}`
-        if(!data['from'] && !data['to'])
-            fromTo = ''
-        return `\\int${fromTo} ${data['expression']} \\, d${data['variable']}`
-    },
-    focus: "from",
-    focus2: "expression"
-}
-
-function genFunction(name){
-    return {
-        name: name,
-        fields: ["input"],
-        data: {},
-        direction: "row",
-        symbol: (x) => {
-            if (x == 0) {
-                return name + "("
-            }
-            if(x == 1) {
-                return ")"
-            }
-            return ""
-        },
-        render: (x) => name + "(" + x["input"] + ")",
-        focus: "input"
-    }
-}
-
-let lookup = {
-    "expression": expr,
-    "fraction": frac,
-    "list": list,
-    "parentheses": paren,
-    "function" : func,
-    "=": equals,
-    "equals" : equals,
-    "+": plus,
-    "plus": plus,
-    "add": plus,
-    "-": minus,
-    "minus": minus,
-    "subtract": minus,
-    "*": times,
-    "multiply": times,
-    "times": times,
-    "^": power,
-    "power": power,
-    "exponent": power,
-    "sum": sum,
-    "sigma": sum,
-    "integral": integral,
-    "cos": genFunction("cos"),
-    "ln": genFunction("ln"),
-    "log": genFunction("log"),
-    "_": subscript,
-    "subscript": subscript
-}
 
 let getById = {}
 
@@ -350,23 +154,20 @@ function create_new(type, parent, slot){
 }
 
 function updateID(node, parentId=""){
-    if(parentId != "")
+    if(parentId != ""){
         node.id = parentId + '.' + node.slot
+    }
     getById[node.id] = node
 
     for(var field of node.fields){
         if(node.data[field] && typeof node.data[field] != 'string'){
             // another node
+            node.data[field].slot = field
+            node.data[field].parent = node
             updateID(node.data[field], node.id)
         }
     }
 }
-
-/*let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
-expression.render = expr.render
-expression.symbol = expr.symbol
-expression.parent = undefined
-getById["top"] = expression*/
 
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
@@ -378,7 +179,7 @@ getById["top"] = expression
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
-    return `<input description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    return `<input aria-label="${field} of ${name}" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent){
@@ -497,7 +298,7 @@ function updateRec(id){
     }
 
     if(node.parent){
-        //console.log('node ' + node.id + ' has parent, go up one level')
+        console.log('node ' + node.id + ' has parent, go up one level', node)
         updateRec(node.parent.id)
     }
 }
@@ -770,6 +571,33 @@ function afterTone(){
     play(after)
 }
 
+/** 
+ * Gets first edible field, given a node
+ * and a direction, specified in dir and
+ * given through NodeDirection in `constants.js`
+ * 
+ * E.g. if dir == RIGHT, then it will find the
+ * leftmost editable field in node
+ */
+function getNext(node, dir){
+    let parent = node
+    let current = node
+    let idx = dir == NodeDirection.LEFT ? 0 : -1
+
+    while(current && typeof current !== 'string'){
+        //console.log('current', current)
+
+        let index = mod(idx, current.fields.length)
+        parent = current
+        current = current.data[current.fields[index]]
+    }
+
+    return {
+        node: parent,
+        idx: mod(idx, parent.fields.length),
+        slot: parent.fields[mod(idx, parent.fields.length)]
+    }
+}
 
 pos = 0
 
@@ -815,8 +643,8 @@ function shiftCaret(delta){
         }
 
         if(nextNode == expression.data['inside'] && field == 'prev'){
-            document.getElementById('top.inside').focus()
-            switchTone()
+            //document.getElementById('top.inside').focus()
+            //switchTone()
 
             return -1
         }
@@ -932,8 +760,55 @@ function shiftCaret(delta){
     return Math.sign(delta)
 }
 
-function collapse(node){
-    let totalText = ""
+/** Returns the other idx, that is
+ *  not the one we're currently on
+ */
+function not(node, idx){
+    if(node.fields.length != 2){
+        console.error("warning: not used when shouldn't have been", idx, node)
+        return idx;
+    }
+    return 1 - idx;
+}
+
+// collapse means take whatever was
+// in this text field, and append it onto
+// whatever remains
+function collapse(node, idx){
+    let currText = node.data[node.fields[idx]]
+    //console.log('currText:', currText)
+
+    let opp = not(node, idx)
+    //console.log(opp, node.data[node.fields[opp]], node, node.parent)
+    node.parent.data[node.slot] = node.data[node.fields[opp]]
+
+    let startingNode = node.parent
+    let ourSlot = undefined
+    let cursorPos = 0
+
+    if (idx < opp){
+        // append on rightmost
+        let {node, slot, idx} = getNext(startingNode, NodeDirection.RIGHT)
+
+        node.data[slot] = currText + node.data[slot]
+        cursorPos = currText.length
+
+        startingNode = node
+        ourSlot = slot
+    }else{
+        // append on leftmost
+        let {node, slot, idx} = getNext(startingNode, NodeDirection.RIGHT)
+
+        node.data[slot] += currText
+        cursorPos = node.data[slot].length - currText.length
+
+        startingNode = node
+        ourSlot = slot
+    }
+
+    ////////////////////////////
+
+    /*let totalText = ""
 
     //console.log(node)
     //console.log(node.data)
@@ -942,22 +817,34 @@ function collapse(node){
         //console.log(x, node.data[x])
         totalText += node.data[x]
     }
+    console.log('total text:', totalText)
     //console.log(totalText)
-    node.parent.data[node.slot] = totalText
+    node.parent.data[node.slot] = totalText*/
 
-    if(node.parent.parent)
-        rerender(node.parent.parent)
+    ////////////////////////////
+
+    /*if(startingNode.parent.parent){
+        rerender(startingNode.parent.parent)
+    }else{
+        rerender(startingNode.parent)
+    }*/
+
+    console.log('start updating ID')
+    updateID(expression, "")
+    console.log('finish updating ID')
+
+    console.log('start rerender')
+    if(startingNode.parent)
+        rerender(startingNode.parent)
     else
-        rerender(node.parent)
+        rerender(startingNode)
+    console.log('end rerender')
 
-    let newElement = document.getElementById(node.parent.id + '.' + node.slot)
+    console.log('new element:', startingNode.id + '.' + ourSlot)
+    let newElement = document.getElementById(startingNode.id + '.' + ourSlot)
+    newElement.setAttribute('focusOn', cursorPos)
 
-    let current = node.parent
-
-    while(current){
-        updateMemoi(current)
-        current = current.parent
-    }
+    //updateMemoi(startingNode)
 
     newElement.focus()
 }
@@ -971,12 +858,14 @@ function collapse(node){
  * 
  */
 function deleteFrom(node, idx){
+    console.log('delete from: ', node, idx)
     let n = node.fields.length
 
     if(idx == 0){
         // delete whole thing, backspace on first
         announceMessage("deleting " + node.name)
-        collapse(node)
+        console.log('deleting 1')
+        collapse(node, idx)
         return
     }
     if(idx == n){// does nothing
@@ -991,9 +880,10 @@ function deleteFrom(node, idx){
 
     // otherwise, do default behavior
     if(node.fields.length == 2){
+        console.log('deleting 2')
         announceMessage("deleting " + node.name)
         // collapse
-        collapse(node)
+        collapse(node, idx)
     }
 
 }

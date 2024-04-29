@@ -58,3 +58,7 @@ function inputsToRects(inputs){
 
     return inputRectangles
 }
+
+function mod(n, m) {
+    return ((n % m) + m) % m;
+}
