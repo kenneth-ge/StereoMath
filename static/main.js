@@ -858,13 +858,17 @@ function collapse(node, idx){
  * 
  */
 function deleteFrom(node, idx){
-    console.log('delete from: ', node, idx)
+    //console.log('delete from: ', node, idx)
     let n = node.fields.length
+
+    // top level element, don't delete
+    if(node.id == 'top'){
+        return
+    }
 
     if(idx == 0){
         // delete whole thing, backspace on first
         announceMessage("deleting " + node.name)
-        console.log('deleting 1')
         collapse(node, idx)
         return
     }
@@ -880,7 +884,6 @@ function deleteFrom(node, idx){
 
     // otherwise, do default behavior
     if(node.fields.length == 2){
-        console.log('deleting 2')
         announceMessage("deleting " + node.name)
         // collapse
         collapse(node, idx)
@@ -989,5 +992,13 @@ function announceMessage(message) {
 }
 
 function getlatex(){
-    alert(renderLaTeX(expression))
+    let text = (renderLaTeX(expression))
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            announceMessage("Copied LaTeX to clipboard!")
+        })
+        .catch(err => {
+            announceMessage('Could not copy text: ', err);
+        });
 }
