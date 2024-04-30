@@ -99,7 +99,7 @@ let plus = genBinary('plus', '+')
 
 let minus = genBinary('minus', '-')
 
-let times = genBinary('times', '\\times')
+let times = genBinary('times', '*')
 
 let power = {
     name: "to the power of",
