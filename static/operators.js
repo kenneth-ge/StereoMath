@@ -81,7 +81,7 @@ function genBinary(name, symbol){
         data: {},
         direction: "row",
         symbol: (x) => x == 1 ? symbol : "",
-        readaloud: (x) => x == 1 ? symbol : "",
+        readaloud: (x) => x == 1 ? name : "",
         render: (data) => `${data["left"]}${symbol}${data["right"]}`,
         focus: "left",
         focus2: "right"
@@ -90,7 +90,6 @@ function genBinary(name, symbol){
 
 function genAssociative(name, symbol, associatesWith){
     let type = genBinary(name, symbol)
-    
 }
 
 let equals = genBinary('equals', '=')
