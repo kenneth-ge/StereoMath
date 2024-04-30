@@ -129,7 +129,7 @@ let sum = {
     data: {},
     direction: "row",
     symbol: (x) => x == 0 ? "Σ" : (x == 1 ? " to " : (x == 2 ? ": " : "")),
-    readaloud: (x) => x == 0 ? "sum from" : (x == 1 ? " to " : (x == 2 ? " of " : "")),
+    readaloud: (x) => x == 0 ? "sum from" : (x == 1 ? "to" : (x == 2 ? "of" : "")),
     render: (data) => {
         let fromTo = ""
         if(data['from'] || data['to']){

@@ -4,6 +4,12 @@ let equation_picker = document.getElementById("equation-picker")
 let isSpatialMode = false
 let wasFocused = undefined
 document.addEventListener("keydown", function(event) {
+    console.log(event.code)
+    // read aloud
+    if (event.ctrlKey && event.altKey && event.code == "BracketLeft"){
+        announceMessage(genAriaLabel(renderLaTeX(expression)))
+    }
+
     // Load element picker
     if (event.ctrlKey && event.code === "Space") {
         equation_picker = document.getElementById("equation-picker")
@@ -181,12 +187,12 @@ getById["top"] = expression
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
-    return `<input aria-label="${field} of ${name}" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    return `<input aria-label="" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent, symbol, readaloud){
     // aria-label="before ${parent.name}" role="presentation"
-    return `<span ${readaloud && readaloud != '' ? `aria-label="${readaloud}"` : 'aria-hidden="true"'} class="separator divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span custom-label="${readaloud}" class="separator divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function makeSymbolSpan(symbol, parent, idx, readaloud){
@@ -194,7 +200,7 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
         return ``
     }
     // role="presentation"
-    return `<span aria-labelledby="${readaloud}" class="separator" tabindex=0 myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span aria-hidden="true" role="presentation" aria-label="" custom-label="${readaloud}" class="separator" tabindex=0 myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -246,7 +252,7 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
             })()}
         </div>`
 
-    str += spacer('next', obj, obj.symbol(obj.fields.length), obj.readaloud(0)) + '</div>'
+    str += spacer('next', obj, obj.symbol(obj.fields.length), obj.readaloud(obj.fields.length)) + '</div>'
 
     return str
 }
@@ -255,6 +261,11 @@ let selected = undefined
 
 function amSelecting(input){
     let focusOn = input.getAttribute('focusOn')
+
+    // console.log(input.tagName, input)
+    if(input.tagName == 'SPAN'){
+        announceMessage(input.getAttribute('custom-label'))
+    }
 
     if(focusOn){
         input.setSelectionRange(focusOn, focusOn)
@@ -1031,6 +1042,8 @@ function handleKeyDown(event, input) {
 }
 
 function announceMessage(message) {
+    console.log('announcing:', message)
+
     var alertDiv = document.getElementById('screenReaderAlert');
     alertDiv.textContent = message;
 }
