@@ -1054,8 +1054,10 @@ function announceMessage(message) {
     console.log('announcing:', message)
 
     var alertDiv = document.getElementById('screenReaderAlert');
-    alertDiv.textContent = ""
+    var log = document.getElementById('announcementLog')
     alertDiv.textContent = message;
+
+    setTimeout(() => {alertDiv.textContent = ""; log.innerHTML = message + '<br>' + log.innerHTML}, 50)
 }
 
 function getlatex(){
