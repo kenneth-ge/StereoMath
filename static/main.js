@@ -715,12 +715,13 @@ function shiftCaret(delta){
             }else if(field == 'prev'){ //left on prev-- keyword ON
                 // go up one and then left
                 nextNode = currentNode.parent
-                nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) - 1
-                if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
+                nextFieldIdx = nextNode.fields.indexOf(currentNode.slot)// - 1
+                nextField = `separator${nextFieldIdx}`
+                /*if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
                     nextField = nextNode.fields[nextFieldIdx]
-                }
+                }*/
     
-                if(nextFieldIdx == -1){ //left from prev to prev
+                if(nextFieldIdx == 0){//-1){ //left from prev to prev
                     nextField = 'prev'
                 }
             }
@@ -773,10 +774,11 @@ function shiftCaret(delta){
                 // go up
                 nextNode = currentNode.parent
                 nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) + 1
-                if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
-                    nextField = nextNode.fields[nextFieldIdx]
+                nextField = `separator${nextFieldIdx}`
+                //if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+                //    nextField = nextNode.fields[nextFieldIdx]
 
-                if(nextFieldIdx == nextNode.fields.length){
+                if(nextFieldIdx >= nextNode.fields.length){
                     nextField = 'next'
                 }
             }
@@ -1045,6 +1047,7 @@ function announceMessage(message) {
     console.log('announcing:', message)
 
     var alertDiv = document.getElementById('screenReaderAlert');
+    alertDiv.textContent = ""
     alertDiv.textContent = message;
 }
 
