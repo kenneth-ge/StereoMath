@@ -187,12 +187,12 @@ getById["top"] = expression
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
-    return `<input aria-label="" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    return `<input autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent, symbol, readaloud){
     // aria-label="before ${parent.name}" role="presentation"
-    return `<span custom-label="${readaloud}" class="separator divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span role="presentation" custom-label="${readaloud}" class="separator divider" tabindex=-1 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function makeSymbolSpan(symbol, parent, idx, readaloud){
@@ -200,7 +200,7 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
         return ``
     }
     // role="presentation"
-    return `<span aria-hidden="true" role="presentation" aria-label="" custom-label="${readaloud}" class="separator" tabindex=0 myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -208,7 +208,9 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
         return renderInput(obj, field, name, myId, idx)
     }
 
-    let str = `<div role="button" myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block outerblock" onkeydown="handleKeyDown(event, this)">`
+    // 
+    // DONT include tabindex=0, causes weird bugs with not reading individual characters in input field
+    let str = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" class="block outerblock" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" role="button" onkeydown="handleKeyDown(event, this)">`
     str += spacer('prev', obj, obj.symbol(0), obj.readaloud(0))
 
     str += `<div style="flex-direction:${obj.direction}" class="innerblock">
@@ -788,6 +790,10 @@ function shiftCaret(delta){
     // if we already found a selectable, then focus on that element,
     // and adjust the cursor position as well
 
+    console.log(nextNode)
+    console.log(nextField)
+    console.log(nextNode.id + '.' + nextField)
+
     // also handle HCI components like playing tones and whatnot
     if(nextField == 'next' || nextField == 'prev' || nextField.includes('separator') || (typeof nextNode.data[nextField] == 'string')){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
@@ -983,6 +989,7 @@ function handleKeyDown(event, input) {
     if (event.key === 'ArrowLeft') {
         // Cursor is at the beginning of the input, prevent moving left
         //event.preventDefault();
+        //console.log('arrow left', input.tagName, cursorPosition)
 
         if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition <= 0){
             let delta = shiftCaret(-1)
