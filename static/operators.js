@@ -23,6 +23,7 @@ let expr = {
     data: {},
     direction: "row",
     symbol: (x) => "",
+    readaloud: (x) => "",
     render: (x) => {
         return `${x["inside"]}`
     },
@@ -67,6 +68,7 @@ let frac = {
     data: {},
     direction: "column",
     symbol: (x) => x == 1 ? "<hr>" : "",
+    readaloud: (x) => x == 1 ? "over" : "",
     render: (data) => `\\frac{${data["numerator"]}}{${data["denominator"]}}`,
     focus: "numerator",
     focus2: "denominator"
@@ -79,10 +81,16 @@ function genBinary(name, symbol){
         data: {},
         direction: "row",
         symbol: (x) => x == 1 ? symbol : "",
+        readaloud: (x) => x == 1 ? symbol : "",
         render: (data) => `${data["left"]}${symbol}${data["right"]}`,
         focus: "left",
         focus2: "right"
     }
+}
+
+function genAssociative(name, symbol, associatesWith){
+    let type = genBinary(name, symbol)
+    
 }
 
 let equals = genBinary('equals', '=')
@@ -121,6 +129,7 @@ let sum = {
     data: {},
     direction: "row",
     symbol: (x) => x == 0 ? "Σ" : (x == 1 ? " to " : (x == 2 ? ": " : "")),
+    readaloud: (x) => x == 0 ? "sum from" : (x == 1 ? " to " : (x == 2 ? " of " : "")),
     render: (data) => {
         let fromTo = ""
         if(data['from'] || data['to']){

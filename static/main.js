@@ -141,6 +141,7 @@ function create_new(type, parent, slot){
 
     ret.render = type.render
     ret.symbol = type.symbol
+    ret.readaloud = type.readaloud
     ret.parent = parent
     ret.slot = slot
 
@@ -172,6 +173,7 @@ function updateID(node, parentId=""){
 let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
 expression.render = expr.render
 expression.symbol = expr.symbol
+expression.readaloud = expr.readaloud
 expression.parent = undefined
 expression.data['inside'] = ''
 getById["top"] = expression
@@ -182,9 +184,17 @@ function renderInput(text, field, name, objID, idx=undefined){
     return `<input aria-label="${field} of ${name}" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
-function spacer(type, parent){
-    // aria-label="before ${parent.name}" 
-    return `<span aria-hidden="true" role="presentation" class="divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)"></span>`
+function spacer(type, parent, symbol, readaloud){
+    // aria-label="before ${parent.name}" role="presentation"
+    return `<span ${readaloud && readaloud != '' ? `aria-label="${readaloud}"` : 'aria-hidden="true"'} class="separator divider" tabindex=0 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+}
+
+function makeSymbolSpan(symbol, parent, idx, readaloud){
+    if(!symbol || symbol == ''){
+        return ``
+    }
+    // role="presentation"
+    return `<span aria-labelledby="${readaloud}" class="separator" tabindex=0 myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -193,23 +203,26 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
     }
 
     let str = `<div role="button" myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" tabindex="0" class="block outerblock" onkeydown="handleKeyDown(event, this)">`
-    str += spacer('prev', obj)
+    str += spacer('prev', obj, obj.symbol(0), obj.readaloud(0))
 
     str += `<div style="flex-direction:${obj.direction}" class="innerblock">
             ${(() => {
                 var total = ""
                 
-                total += `<span style="width: 100%;">${obj.symbol(0)}</span>`
+                // we move the first symbol onto prev
+                // total += makeSymbolSpan(obj.symbol(0), obj, 0)
+                //`<span style="width: 100%;">${obj.symbol(0)}</span>`
                 for(var i = 0; i < obj.fields.length; i++){
                     if(i > 0){
-                        total += `<span style="width: 100%;">${obj.symbol(i)}</span>`
+                        total += makeSymbolSpan(obj.symbol(i), obj, i, obj.readaloud(i))
+                        //`<span style="width: 100%;">${obj.symbol(i)}</span>`
                     }
                     let field = obj.fields[i]
                     if(field == "..."){
                         //console.log('render here')
                         for(var j = 0; j < obj.data["..."].length; j++){
                             if(j > 0){
-                                total += `<span>${obj.symbol(j)}</span>`
+                                total += makeSymbolSpan(obj.symbol(j), obj, j, obj.readaloud(j))
                             }
                             //console.log('subrender: ' + obj.data["..."][j] + " " + obj.id + " " + j)
                             total += renderDiv(obj.data["..."][j], obj.id, '...', 'list', j)
@@ -225,14 +238,15 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
                         }
                     }
                 }
-                if(obj.name!="list")
-                    total += `<span>${obj.symbol(obj.fields.length)}</span>`
+                // we move the last symbol onto prev as well
+                //if(obj.name != "list")
+                //    total += makeSymbolSpan(obj.symbol(obj.fields.length), obj, obj.fields.length)//`<span>${obj.symbol(obj.fields.length)}</span>`
 
                 return total
             })()}
         </div>`
 
-    str += spacer('next', obj) + '</div>'
+    str += spacer('next', obj, obj.symbol(obj.fields.length), obj.readaloud(0)) + '</div>'
 
     return str
 }
@@ -298,7 +312,7 @@ function updateRec(id){
     }
 
     if(node.parent){
-        console.log('node ' + node.id + ' has parent, go up one level', node)
+        //console.log('node ' + node.id + ' has parent, go up one level', node)
         updateRec(node.parent.id)
     }
 }
@@ -599,17 +613,28 @@ function getNext(node, dir){
     }
 }
 
-pos = 0
+let currIdx = 0
 
+/**
+ * shifts the caret delta units to the left or right,
+ * left is negative, right is positive
+ * 
+ * Includes shifting into begin/end, as well as onto separators
+ * @param {int} delta 
+ * @returns the amount of shift
+ */
 function shiftCaret(delta){
+    /* ignore null shifts */
     if(delta == 0){
         return 0
     }
 
+    /* don't shift left past the beginning */
     if(selected.id == 'top.inside' && delta < 0){
         return 0;
     }
 
+    /* handle case where |delta| > 1-- just repeat one-unit shifts multiple times */
     if(Math.abs(delta) > 1){
         let cnt = 0
 
@@ -617,7 +642,7 @@ function shiftCaret(delta){
             let chng = shiftCaret(Math.sign(delta))
             cnt += chng
 
-            if(chng = 0){
+            if(chng == 0){
                 return cnt
             }
         }
@@ -630,90 +655,128 @@ function shiftCaret(delta){
     let currentNode = getById[id]
     let currentField = field
 
+    // the fields we need to define/instantiate
+    // in the if-statement below
     let nextNode = undefined
     let nextFieldIdx = undefined 
     let nextField = undefined
 
+    /* shift left or right */
     if(delta < 0){
         // left in general
         nextNode = currentNode
-        nextFieldIdx = currentNode.fields.indexOf(currentField) - 1
-        if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
+
+        // this is a separator, go onto field
+        if(field.includes('separator')){
+            // get index of separator
+            let separatorIdx = field.substring(field.indexOf("separator") + "separator".length)
+
+            // if we're on a separator (not prev or next), we can
+            // guarantee that this is the next field idx if we're going
+            // left
+            let fieldIdx = separatorIdx - 1
+
+            nextFieldIdx = fieldIdx
             nextField = currentNode.fields[nextFieldIdx]
-        }
+        }else{ // we're on a field, go onto separator
+            // field of separator is same as field of item when going left
+            nextFieldIdx = currentNode.fields.indexOf(currentField)
+            nextField = `separator${nextFieldIdx}`
 
-        if(nextNode == expression.data['inside'] && field == 'prev'){
-            //document.getElementById('top.inside').focus()
-            //switchTone()
-
-            return -1
-        }
-
-        // left onto prev
-        if(nextFieldIdx == -1){
-            nextField = 'prev'
-        }
-
-        // left on next
-        if(field == 'next'){
-            nextNode = currentNode
-            nextFieldIdx = currentNode.fields.length - 1
-            nextField = currentNode.fields[nextFieldIdx]
-        }else if(field == 'prev'){ //left on prev
-            // go up one and then left
-            nextNode = currentNode.parent
-            nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) - 1
-            if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
-                nextField = nextNode.fields[nextFieldIdx]
+    
+            if(nextNode == expression.data['inside'] && field == 'prev'){
+                //document.getElementById('top.inside').focus()
+                //switchTone()
+                return -1
             }
-
-            if(nextFieldIdx == -1){ //left from prev to prev
+    
+            // left onto prev
+            // keyword: onTO
+            if(nextFieldIdx == 0){
                 nextField = 'prev'
             }
-
-            /*if(nextNode == expression.data['inside']){
-                nextField = 'prev'
-            }*/
+    
+            // left on next
+            if(field == 'next'){
+                nextNode = currentNode
+                nextFieldIdx = currentNode.fields.length - 1
+                nextField = currentNode.fields[nextFieldIdx]
+            }else if(field == 'prev'){ //left on prev-- keyword ON
+                // go up one and then left
+                nextNode = currentNode.parent
+                nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) - 1
+                if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length){
+                    nextField = nextNode.fields[nextFieldIdx]
+                }
+    
+                if(nextFieldIdx == -1){ //left from prev to prev
+                    nextField = 'prev'
+                }
+            }
         }
     }else{
         // right in general
         nextNode = currentNode
-        nextFieldIdx = nextNode.fields.indexOf(currentField) + 1
 
-        if(field == 'next' && currentNode.id == 'top.inside'){
-            return 0;
-        }
+        // this is a separator, go onto field
+        if(field.includes('separator')){
+            // get index of separator
+            let separatorIdx = field.substring(field.indexOf("separator") + "separator".length)
 
-        if(selected.id == 'top.inside'){
-            document.getElementById('top.inside.prev').focus()
-            beforeTone()
-            return 1
-        }
+            // if we're on a separator (not prev or next), we can
+            // guarantee that this is the next field idx if we're going
+            // right
+            let fieldIdx = separatorIdx
 
-        if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+            nextFieldIdx = fieldIdx
             nextField = currentNode.fields[nextFieldIdx]
+        }else{
+            // this is a field, go onto separator
+            nextFieldIdx = nextNode.fields.indexOf(currentField) + 1
 
-        if(nextFieldIdx == nextNode.fields.length)
-            nextField = 'next'
+            // don't allow going next on root node
+            if(field == 'next' && currentNode.id == 'top.inside'){
+                return 0;
+            }
 
-        if(field == 'prev'){ //right on prev
-            nextFieldIdx = 0
-            nextField = nextNode.fields[0]
-        }else if(field == 'next'){ //right on next
-            // go up
-            nextNode = currentNode.parent
-            nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) + 1
-            if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
-                nextField = nextNode.fields[nextFieldIdx]
+            // this is outdated, from going right on the leftmost "highlight all"
+            // node
+            if(selected.id == 'top.inside'){
+                document.getElementById('top.inside.prev').focus()
+                beforeTone()
+                return 1
+            }
 
-            if(nextFieldIdx == nextNode.fields.length){
+            nextField = `separator${nextFieldIdx}`
+            //if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+            //    nextField = currentNode.fields[nextFieldIdx]
+
+            // right onTO next
+            if(nextFieldIdx == nextNode.fields.length)
                 nextField = 'next'
+
+            if(field == 'prev'){ //right ON prev
+                nextFieldIdx = 0
+                nextField = nextNode.fields[0]
+            }else if(field == 'next'){ //right ON next
+                // go up
+                nextNode = currentNode.parent
+                nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) + 1
+                if(nextFieldIdx >= 0 && nextFieldIdx < nextNode.fields.length)
+                    nextField = nextNode.fields[nextFieldIdx]
+
+                if(nextFieldIdx == nextNode.fields.length){
+                    nextField = 'next'
+                }
             }
         }
     }
  
-    // if we already found a selectable
-    if(nextField == 'next' || nextField == 'prev' || (typeof nextNode.data[nextField] == 'string')){
+    // if we already found a selectable, then focus on that element,
+    // and adjust the cursor position as well
+
+    // also handle HCI components like playing tones and whatnot
+    if(nextField == 'next' || nextField == 'prev' || nextField.includes('separator') || (typeof nextNode.data[nextField] == 'string')){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
         
         if(typeof nextNode.data[nextField] == 'string'){
@@ -729,14 +792,15 @@ function shiftCaret(delta){
             afterTone()
         }else if(nextField == 'prev'){
             beforeTone()
-        }else{
+        }else if(!nextField.includes('separator')){
             switchTone()
         }
+
         return Math.sign(delta)
     }
     
-    // move down until we get to either 'next' or 'prev'
-
+    // otherwise, move down until we get to our next selectable-- 
+    // either 'next' or 'prev'
     if(delta < 0){
         nextNode = nextNode.data[nextField]
         nextField = 'next'
@@ -806,41 +870,18 @@ function collapse(node, idx){
         ourSlot = slot
     }
 
-    ////////////////////////////
-
-    /*let totalText = ""
-
-    //console.log(node)
-    //console.log(node.data)
-
-    for(var x of node.fields){
-        //console.log(x, node.data[x])
-        totalText += node.data[x]
-    }
-    console.log('total text:', totalText)
-    //console.log(totalText)
-    node.parent.data[node.slot] = totalText*/
-
-    ////////////////////////////
-
-    /*if(startingNode.parent.parent){
-        rerender(startingNode.parent.parent)
-    }else{
-        rerender(startingNode.parent)
-    }*/
-
-    console.log('start updating ID')
+    //console.log('start updating ID')
     updateID(expression, "")
-    console.log('finish updating ID')
+    //console.log('finish updating ID')
 
-    console.log('start rerender')
+    //console.log('start rerender')
     if(startingNode.parent)
         rerender(startingNode.parent)
     else
         rerender(startingNode)
-    console.log('end rerender')
+    //console.log('end rerender')
 
-    console.log('new element:', startingNode.id + '.' + ourSlot)
+    //console.log('new element:', startingNode.id + '.' + ourSlot)
     let newElement = document.getElementById(startingNode.id + '.' + ourSlot)
     newElement.setAttribute('focusOn', cursorPos)
 
@@ -908,6 +949,9 @@ function handleKeyDown(event, input) {
         announceMessage(input.getAttribute('description'))
     }
 
+    /**
+     * Up and down-- move from one node to the next
+     */
     if(event.key == 'ArrowUp'){
         let delta = shiftCaret(-1)
 
