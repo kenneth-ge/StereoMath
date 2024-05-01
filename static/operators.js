@@ -12,6 +12,15 @@ let func = {
         }
         return ""
     },
+    readaloud: (x) => {
+        if (x == 1) {
+            return "of"
+        }
+        if(x == 2) {
+            return ""
+        }
+        return ""
+    },
     render: (x) => x["name"] + "(" + x["input"] + ")",
     focus: "name",
     focus2: "input"
@@ -36,6 +45,7 @@ let paren = {
     data: {},
     direction: "row",
     symbol: (x) => {if (x == 0) return "("; else if (x == 1) return ")"; else return ""},
+    readaloud: (x) => {return ""},
     render: (x) => {
         return `(${x["inside"]})`
     },
@@ -49,6 +59,7 @@ let list = {
     data: {"...": []},
     direction: "row",
     symbol: (x) => x > 0 ? "," : "",
+    readaloud: (x) => x > 0 ? "comma" : "",
     render: (y) => {
         let total_string = ""
         //console.log(y)
@@ -98,7 +109,7 @@ let plus = genBinary('plus', '+')
 
 let minus = genBinary('minus', '-')
 
-let times = genBinary('times', '*')
+let times = genBinary('times', '\\times ')
 
 let power = {
     name: "to the power of",
@@ -106,6 +117,7 @@ let power = {
     data: {},
     direction: "row",
     symbol: (x) => x == 1 ? "^" : "",
+    readaloud: (x) => x == 1 ? "to the power of" : "",
     render: (data) => `{${data["base"]}}^{${data["exponent"]}}`,
     focus: "base",
     focus2: "exponent"
@@ -116,7 +128,8 @@ let subscript = {
     fields: ["base", "sub"],
     data: {},
     direction: "row",
-    symbol: (x) => x == 1 ? "^" : "",
+    symbol: (x) => x == 1 ? "_" : "",
+    readaloud: (x) => x == 1 ? "sub" : "",
     render: (data) => `{${data["base"]}}_{${data["sub"]}}`,
     focus: "base",
     focus2: "sub"
@@ -162,6 +175,17 @@ let integral = {
             return "d"
         return ""
     },
+    readaloud: (x) => {
+        if(x == 0)
+            return "integral from"
+        if(x==1)
+            return "to"
+        if(x==2)
+            return "of"
+        if(x==3)
+            return "d"
+        return ""
+    },
     render: (data) => {
         let fromTo = `_{${data['from']}}^{${data['to']}}`
         if(!data['from'] && !data['to'])
@@ -184,6 +208,15 @@ function genFunction(name){
             }
             if(x == 1) {
                 return ")"
+            }
+            return ""
+        },
+        readaloud: (x) => {
+            if (x == 0) {
+                return name + " of"
+            }
+            if(x == 1) {
+                return ""
             }
             return ""
         },

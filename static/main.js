@@ -995,6 +995,7 @@ function handleKeyDown(event, input) {
             let delta = shiftCaret(-1)
 
             event.preventDefault()
+            event.stopImmediatePropagation()
         }
 
         event.stopPropagation();
