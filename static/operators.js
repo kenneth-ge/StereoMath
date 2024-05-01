@@ -230,6 +230,7 @@ function genFunction(name){
 let lookup = {
     "expression": expr,
     "fraction": frac,
+    "/": frac,
     "list": list,
     "parentheses": paren,
     "function" : func,
