@@ -85,15 +85,15 @@ let frac = {
     focus2: "denominator"
 }
 
-function genBinary(name, symbol){
+function genBinary(name, latexSymbol, renderSymbol){
     return {
         name: name,
         fields: ["left", "right"],
         data: {},
         direction: "row",
-        symbol: (x) => x == 1 ? symbol : "",
+        symbol: (x) => x == 1 ? (renderSymbol ? renderSymbol : latexSymbol) : "",
         readaloud: (x) => x == 1 ? name : "",
-        render: (data) => `${data["left"]}${symbol}${data["right"]}`,
+        render: (data) => `${data["left"]}${latexSymbol}${data["right"]}`,
         focus: "left",
         focus2: "right"
     }
@@ -109,7 +109,9 @@ let plus = genBinary('plus', '+')
 
 let minus = genBinary('minus', '-')
 
-let times = genBinary('times', '\\times ')
+let times = genBinary('times', '\\times ', '×')
+let cross = genBinary('cross', '\\times ', '×')
+let dot = genBinary('dot', '\\cdot', '·')
 
 let power = {
     name: "to the power of",
@@ -242,6 +244,10 @@ let lookup = {
     "*": times,
     "multiply": times,
     "times": times,
+    "x": cross,
+    "cross": cross,
+    "dot": dot,
+    ".": dot,
     "^": power,
     "power": power,
     "exponent": power,

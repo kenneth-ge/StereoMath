@@ -62,3 +62,66 @@ function inputsToRects(inputs){
 function mod(n, m) {
     return ((n % m) + m) % m;
 }
+
+let notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+
+function shiftTone(note, shift){
+    //console.log(note, shift)
+
+    let c = notes.indexOf(note[0])
+    let octave = note.charCodeAt(1) - '0'.charCodeAt(0)
+
+    c += shift
+    
+    while(c < 0){
+        c += 7
+        octave -= 1
+    }
+
+    while(c >= 7){
+        c -= 7
+        octave += 1
+    }
+    c %= 7
+
+    //console.log('final c', c)
+
+    return notes[c] + '' + octave
+}
+
+function getNumBefore(node, field){
+    console.log('------------')
+    console.log(node, field)
+
+    let idx = node.fields.indexOf(field)
+    if(!field){
+        idx = node.fields.length
+    }
+
+    let total = 0
+
+    console.log('field', field, 'idx')
+
+    // go down
+    for(var i = 0; i < idx; i++){
+        let thisField = node.fields[i]
+        if((!node.data[thisField]) || typeof node.data[thisField] == 'string'){
+            console.log('this is a string')
+            total += 1
+        }else{
+            let val = getNumBefore(node.data[thisField])
+            console.log('child', val, node.data[thisField])
+            total += val
+        }
+    }
+
+    // go up
+    if(node.parent && field){
+        console.log('go up')
+        let ans = getNumBefore(node.parent, node.slot)
+        console.log('go up and get this ans:', ans, 'from', node, field)
+        total += ans
+    }
+
+    return total
+}

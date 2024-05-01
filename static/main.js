@@ -109,8 +109,38 @@ document.addEventListener("keydown", function(event) {
             count++
         }
 
-        //isSpatialMode = false
+        // isSpatialMode = false
         topInputs[best].focus()
+
+        {
+            // play piano sound
+
+            // get total number of input fields
+            let myDiv = document.getElementById("blocks");
+            let inputFields = myDiv.getElementsByTagName("input");
+            let inputCount = inputFields.length
+
+            console.log('inputCount', inputCount)
+
+            let id = topInputs[best].getAttribute('myId')
+            let field = topInputs[best].getAttribute('field')
+            let node = getById[id]
+
+            let numBefore = getNumBefore(node, field)
+
+            //create a synth and connect it to the main output (your speakers)
+            const synth = new Tone.Synth().toDestination();
+            const now = Tone.now();
+
+            //play a middle 'C' for the duration of an 8th note
+
+            console.log('playing notes:', 'A3', 'A3 shifted ' + numBefore, 'A3 shifted ' + inputCount)
+            console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
+
+            synth.triggerAttackRelease("A3", "8n", now);
+            synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 0.5);
+            synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 1);
+        }
     }
   });
 
