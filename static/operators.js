@@ -111,7 +111,7 @@ let minus = genBinary('minus', '-')
 
 let times = genBinary('times', '\\times ', '×')
 let cross = genBinary('cross', '\\times ', '×')
-let dot = genBinary('dot', '\\cdot', '·')
+let dot = genBinary('dot', '\\cdot ', '·')
 
 let power = {
     name: "to the power of",
