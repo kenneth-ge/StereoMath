@@ -90,8 +90,8 @@ function shiftTone(note, shift){
 }
 
 function getNumBefore(node, field){
-    console.log('------------')
-    console.log(node, field)
+    //console.log('------------')
+    //console.log(node, field)
 
     let idx = node.fields.indexOf(field)
     if(!field){
@@ -100,26 +100,26 @@ function getNumBefore(node, field){
 
     let total = 0
 
-    console.log('field', field, 'idx')
+    //console.log('field', field, 'idx')
 
     // go down
     for(var i = 0; i < idx; i++){
         let thisField = node.fields[i]
         if((!node.data[thisField]) || typeof node.data[thisField] == 'string'){
-            console.log('this is a string')
+            //console.log('this is a string')
             total += 1
         }else{
             let val = getNumBefore(node.data[thisField])
-            console.log('child', val, node.data[thisField])
+            //console.log('child', val, node.data[thisField])
             total += val
         }
     }
 
     // go up
     if(node.parent && field){
-        console.log('go up')
+        //console.log('go up')
         let ans = getNumBefore(node.parent, node.slot)
-        console.log('go up and get this ans:', ans, 'from', node, field)
+        //console.log('go up and get this ans:', ans, 'from', node, field)
         total += ans
     }
 

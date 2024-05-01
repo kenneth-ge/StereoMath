@@ -24,19 +24,29 @@ function rowSum(row, upToExclusive){
 
 /**
  * 
- * Uses 0, 0 to represent top left corner
+ * Uses 0, 0 to represent top left corner, 1, 1 to represent bottom right
  * 
  * @param {*} key 
  * @param {*} code 
  * @returns 
  */
 function getLocation(key, code){
+    //console.log('key', key, key.length, 'code', code)
+    if (key.length === 1) {
+        key = key.toLowerCase()
+    }
+    //console.log('key', key, key.length, 'code', code)
+
     let using = key
     if(key == 'Shift'){
         using = code
     }
 
+    //console.log(key, code)
+    //console.log(findInMatrix(keyboard, using))
+
     if(!findInMatrix(keyboard, using)){
+        console.log('null')
         return null
     }
 

@@ -70,6 +70,16 @@
     width: 100%;
   }
 
+  .bluecirc {
+    width: 30px; /* Adjust width as needed */
+    height: 30px; /* Adjust height as needed */
+    border-radius: 50%;
+    background-color: blue;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
   .separator {
     min-width: 5px; /* Adjust the width as needed */
     width: 100%;

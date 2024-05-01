@@ -1,10 +1,106 @@
 let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
 
+function handleSpatial(event){
+    event.preventDefault()
+    event.stopPropagation()
+
+    let loc = getLocation(event.key, event.code)
+
+    if(!loc){
+        return
+    }
+
+    let p = loc
+
+    //console.log(event.key)
+    //console.log(event.code)
+
+    //console.log(x, y)
+
+    const topInputs = document.querySelectorAll('input[id^="top"]')
+    const {left, top, right, bottom} = document.getElementById('top').getBoundingClientRect()
+    const totalsize = {
+        x: right - left,
+        y: bottom - top
+    }
+
+    // transform keyboard coords to actual coords, and move blue circle accordingly
+    const blueCirc = document.getElementById('bluecirc')
+    blueCirc.style.left = (p.x * totalsize.x) + "px"; // Set the left position
+    blueCirc.style.top = (p.y * totalsize.y) + "px";   // Set the top position
+
+    const rects = inputsToRects(topInputs)
+
+    // transform rect coordinates
+    for(var r of rects){
+        r.min.x -= left
+        r.min.y -= top
+        r.max.x -= left
+        r.max.y -= top
+
+        r.min.x /= totalsize.x
+        r.min.y /= totalsize.y
+        r.max.x /= totalsize.x
+        r.max.y /= totalsize.y
+    }
+
+    //console.log('Input rectangles:', rects)
+    //console.log(p)
+
+    var best = 0
+    var bestDist = 999999
+    var count = 0
+    
+    for(var r of rects){
+        let dist = distance(r, p)
+
+        if(dist < bestDist){
+            best = count
+            bestDist = dist
+        }
+
+        count++
+    }
+
+    // isSpatialMode = false
+    topInputs[best].focus()
+
+    {
+        // play piano sound
+
+        // get total number of input fields
+        let myDiv = document.getElementById("blocks");
+        let inputFields = myDiv.getElementsByTagName("input");
+        let inputCount = inputFields.length
+
+        //console.log('inputCount', inputCount)
+
+        let id = topInputs[best].getAttribute('myId')
+        let field = topInputs[best].getAttribute('field')
+        let node = getById[id]
+
+        let numBefore = getNumBefore(node, field)
+
+        //create a synth and connect it to the main output (your speakers)
+        const synth = new Tone.Synth().toDestination();
+        const now = Tone.now();
+
+        //play a middle 'C' for the duration of an 8th note
+
+        //console.log('playing notes:', 'A3', 'A3 shifted ' + numBefore, 'A3 shifted ' + inputCount)
+        //console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
+
+        synth.triggerAttackRelease("A3", "8n", now);
+        synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 0.5);
+        synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 1);
+    }
+}
+
 let isSpatialMode = false
 let wasFocused = undefined
 document.addEventListener("keydown", function(event) {
-    console.log(event.code)
+    //console.log('THIS KEYCODE:', event.code)
     // read aloud
     if (event.ctrlKey && event.altKey && event.code == "BracketLeft"){
         announceMessage(genAriaLabel(renderLaTeX(expression)))
@@ -53,94 +149,7 @@ document.addEventListener("keydown", function(event) {
     }
 
     if(isSpatialMode){
-        event.preventDefault()
-        event.stopPropagation()
-
-        let loc = getLocation(event.key, event.code)
-
-        if(!loc){
-            return
-        }
-
-        let p = loc
-
-        //console.log(event.key)
-        //console.log(event.code)
-
-        //console.log(x, y)
-
-        const topInputs = document.querySelectorAll('input[id^="top"]')
-        const {left, top, right, bottom} = document.getElementById('top').getBoundingClientRect()
-        const totalsize = {
-            x: right - left,
-            y: bottom - top
-        }
-
-        const rects = inputsToRects(topInputs)
-
-        // transform rect coordinates
-        for(var r of rects){
-            r.min.x -= left
-            r.min.y -= top
-            r.max.x -= left
-            r.max.y -= top
-
-            r.min.x /= totalsize.x
-            r.min.y /= totalsize.y
-            r.max.x /= totalsize.x
-            r.max.y /= totalsize.y
-        }
-
-        console.log('Input rectangles:', rects)
-        console.log(p)
-
-        var best = 0
-        var bestDist = 999999
-        var count = 0
-        
-        for(var r of rects){
-            let dist = distance(r, p)
-
-            if(dist < bestDist){
-                best = count
-                bestDist = dist
-            }
-
-            count++
-        }
-
-        // isSpatialMode = false
-        topInputs[best].focus()
-
-        {
-            // play piano sound
-
-            // get total number of input fields
-            let myDiv = document.getElementById("blocks");
-            let inputFields = myDiv.getElementsByTagName("input");
-            let inputCount = inputFields.length
-
-            console.log('inputCount', inputCount)
-
-            let id = topInputs[best].getAttribute('myId')
-            let field = topInputs[best].getAttribute('field')
-            let node = getById[id]
-
-            let numBefore = getNumBefore(node, field)
-
-            //create a synth and connect it to the main output (your speakers)
-            const synth = new Tone.Synth().toDestination();
-            const now = Tone.now();
-
-            //play a middle 'C' for the duration of an 8th note
-
-            console.log('playing notes:', 'A3', 'A3 shifted ' + numBefore, 'A3 shifted ' + inputCount)
-            console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
-
-            synth.triggerAttackRelease("A3", "8n", now);
-            synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 0.5);
-            synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 1);
-        }
+        handleSpatial(event)
     }
   });
 
@@ -1070,8 +1079,11 @@ function handleKeyDown(event, input) {
     }
 
     if(event.key == 'Backspace' && (input.tagName == 'SPAN' || input.selectionEnd == 0)){
+        if(isSpatialMode){
+            return
+        }
         event.preventDefault()
-        event.stopPropagation()
+        //event.stopPropagation()
 
         // backspace
         let id = input.id // id of element including field
