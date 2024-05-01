@@ -46,7 +46,7 @@ function getLocation(key, code){
     //console.log(findInMatrix(keyboard, using))
 
     if(!findInMatrix(keyboard, using)){
-        console.log('null')
+        //console.log('null')
         return null
     }
 

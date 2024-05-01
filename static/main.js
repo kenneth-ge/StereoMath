@@ -230,7 +230,8 @@ getById["top"] = expression
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
-    return `<input autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    // input.style.minWidth = (input.value.length) + 'ch';
+    return `<input style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent, symbol, readaloud){
