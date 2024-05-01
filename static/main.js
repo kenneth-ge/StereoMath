@@ -10,6 +10,10 @@ document.addEventListener("keydown", function(event) {
         announceMessage(genAriaLabel(renderLaTeX(expression)))
     }
 
+    if (event.ctrlKey && event.altKey && event.code == "BracketRight"){
+        announceMessage(genRead(expression))
+    }
+
     // Load element picker
     if (event.ctrlKey && event.code === "Space") {
         equation_picker = document.getElementById("equation-picker")
@@ -344,6 +348,24 @@ function updateAriaLabel(selected){
         }
         updateRec(id)
     }
+}
+
+function genRead(expression){
+    let str = ""
+
+    for(var i = 0; i <= expression.fields.length; i++){
+        str += " " + expression.readaloud(i) + " "
+        if(i < expression.fields.length){
+            let child = expression.data[expression.fields[i]]
+            if(typeof child == 'string'){
+                str += child
+            }else{
+                str += genRead(child)
+            }
+        }
+    }
+
+    return str
 }
 
 function genAriaLabel(latex, id){
@@ -790,18 +812,20 @@ function shiftCaret(delta){
     // if we already found a selectable, then focus on that element,
     // and adjust the cursor position as well
 
-    console.log(nextNode)
+    /*console.log(nextNode)
     console.log(nextField)
-    console.log(nextNode.id + '.' + nextField)
+    console.log(nextNode.id + '.' + nextField)*/
 
     // also handle HCI components like playing tones and whatnot
     if(nextField == 'next' || nextField == 'prev' || nextField.includes('separator') || (typeof nextNode.data[nextField] == 'string')){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
         
         if(typeof nextNode.data[nextField] == 'string'){
-            if(delta > 0)
+            if(delta > 0){
+                if(associatedInput.value[0])
+                    announceMessage(associatedInput.value[0])
                 associatedInput.setAttribute('focusOn', 0)
-            else
+            }else
                 associatedInput.setAttribute('focusOn', associatedInput.value.length)
         }
 
@@ -968,6 +992,12 @@ function handleKeyDown(event, input) {
         announceMessage(input.getAttribute('description'))
     }
 
+    if(event.ctrlKey && event.altKey && event.key == 'Insert'){
+        //narrate this element
+        console.log(input)
+        announceMessage(input.value)
+    }
+
     /**
      * Up and down-- move from one node to the next
      */
@@ -1052,7 +1082,9 @@ function handleKeyDown(event, input) {
 }
 
 function announceMessage(message) {
-    console.log('announcing:', message)
+    if(!message)
+        return
+    //console.log('announcing:', message)
 
     var alertDiv = document.getElementById('screenReaderAlert');
     var log = document.getElementById('announcementLog')
