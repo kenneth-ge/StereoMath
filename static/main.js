@@ -64,7 +64,7 @@ function handleSpatial(event){
     }
 
     // isSpatialMode = false
-    topInputs[best].focus()
+    focusElem(topInputs[best])
 
     {
         // play piano sound
@@ -98,6 +98,7 @@ function handleSpatial(event){
 }
 
 let isSpatialMode = false
+let isLiteralMode = false
 let wasFocused = undefined
 document.addEventListener("keydown", function(event) {
     //console.log('THIS KEYCODE:', event.code)
@@ -108,6 +109,10 @@ document.addEventListener("keydown", function(event) {
 
     if (event.ctrlKey && event.altKey && event.code == "BracketRight"){
         announceMessage(genRead(expression))
+    }
+
+    if (event.ctrlKey && event.altKey && event.code == "KeyL"){
+        isLiteralMode = !isLiteralMode
     }
 
     // Load element picker
@@ -303,10 +308,13 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
     return str
 }
 
+/** focusIdx increments every time we focus on a new element */
 let selected = undefined
+let focusIdx = 0
 
 function amSelecting(input){
     let focusOn = input.getAttribute('focusOn')
+    focusIdx += 1
 
     // console.log(input.tagName, input)
     if(input.tagName == 'SPAN'){
@@ -418,8 +426,38 @@ function genAriaLabel(latex, id){
     return SRE.toSpeech(mathml)
 }
 
-function handleValueChanged(input){
+async function handleValueChanged(input){
     input.style.minWidth = (input.value.length) + 'ch';
+
+    ////////// AUTOMATICALLY INSERT ELEMENT, BUT ONLY DO THIS WHEN NOT IN LITERAL MODE //////////
+    if(!isLiteralMode){
+        let str = input.value
+        let tokens = tokenizeWithSymbols(str)
+
+        let lastToken = tokens[tokens.length - 1]
+
+        //console.log('last token:', lastToken)
+        if(lookup.hasOwnProperty(lastToken) && !ignoreNonLiteral.hasOwnProperty(lastToken)){
+            // remove token
+            let updatedString = input.value.substring(0, input.value.length - lastToken.length)
+            input.value = updatedString
+            
+            //var event = new Event('input', { bubbles: true });
+            //input.dispatchEvent(event);
+            //console.log(input)
+
+            // add element
+            let newElem = await autocompleteChanged(lastToken)
+
+            // focus on new element
+            // we shift the caret right, because typing is always left to right (on English keyboards)
+            //console.log('shift caret twice')
+            await shiftCaret(2)
+            //console.log('done shifting')
+        }
+    }
+
+    /////////////////////////////////
 
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
@@ -428,7 +466,7 @@ function handleValueChanged(input){
     updateMemoi(getById[id])
 }
 
-function addToList(id){
+async function addToList(id){
     let new_list_item = create_new(expr, getById[id], "...")
 
     let divStr = renderDiv(new_list_item)
@@ -444,7 +482,7 @@ function addToList(id){
 
     rerender(new_list_item)
 
-    focusOnFind(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside")
+    await focusOnFind(id + "." + '...' + '.' + (getById[id].data['...'].length - 1) + ".inside")
 }
 
 function rerender(item_changed){
@@ -457,7 +495,7 @@ function rerender(item_changed){
         id.outerHTML = renderDiv(item_changed)
 }
 
-function reroot(node, parent, value, after){
+async function reroot(node, parent, value, after){
     newItem = create_new(lookup[value], parent, node.slot)
     if(parent)
         parent.data[node.slot] = newItem
@@ -486,16 +524,16 @@ function reroot(node, parent, value, after){
 
     if(newItem.fields.length > 1){
         if(after)
-            focusOnFind(newItem.id + "." + newItem.focus)
+            await focusOnFind(newItem.id + "." + newItem.focus)
         else{
-            focusOnFind(newItem.id + "." + newItem.focus2)
+            await focusOnFind(newItem.id + "." + newItem.focus2)
         }
     }else{
-        focusOnFind(newItem.id + "." + toFocusOn)
+        await focusOnFind(newItem.id + "." + toFocusOn)
     }
 }
 
-function autocompleteChanged(value) {
+async function autocompleteChanged(value) {
     //console.log('trigger:', value)
 
     if(!selected){
@@ -559,14 +597,17 @@ function autocompleteChanged(value) {
         getById[id].data[field] = newItem
     }
 
-    focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
+    rerender(newItem)
+
+    await focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
 
     /*console.log('rerender adding new item')
     console.log('selection is: ' + value)
     console.log('item is: ')
     console.log(newItem)*/
-    rerender(newItem)
     //document.getElementById().focus()
+
+    return newItem
 }
 
 focusOnFind(expression.id + "." + expression.focus)
@@ -616,12 +657,20 @@ function renderLaTeX(element){
     return element.memoi
 }
 
-function focusOnFind(id, selectionStart=0){
-    waitForElm(id).then((elm) => {
-        //console.log('finished waiting')
-        elm.setAttribute('focusOn', selectionStart)
-        elm.focus()
-    })
+async function focusElem(elem){
+    let currentFocusIdx = focusIdx
+    elem.focus()
+
+    /*while(focusIdx == currentFocusIdx){
+        await asyncTimeout(5)
+    }*/
+}
+
+async function focusOnFind(id, selectionStart=0){
+    let elem = await waitForElm(id)
+    
+    elem.setAttribute('focusOn', selectionStart)
+    elem.focus()
 }
 
 
@@ -869,7 +918,7 @@ function shiftCaret(delta){
                 associatedInput.setAttribute('focusOn', associatedInput.value.length)
         }
 
-        associatedInput.focus()
+        focusElem(associatedInput)
 
         if(nextField == 'next'){
             afterTone()
@@ -890,7 +939,7 @@ function shiftCaret(delta){
 
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
-        associatedInput.focus()
+        focusElem(associatedInput)
 
         afterTone()
     }else{
@@ -899,7 +948,7 @@ function shiftCaret(delta){
 
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
-        associatedInput.focus()
+        focusElem(associatedInput)
 
         beforeTone()
     }
@@ -970,7 +1019,7 @@ function collapse(node, idx){
 
     //updateMemoi(startingNode)
 
-    newElement.focus()
+    focusElem(newElement)
 }
 
 /**
@@ -1045,7 +1094,7 @@ function handleKeyDown(event, input) {
         let delta = shiftCaret(-1)
 
         if(delta == 0){
-            document.getElementById('top.inside').focus()
+            focusElem(document.getElementById('top.inside'))
         }
 
         event.stopPropagation();

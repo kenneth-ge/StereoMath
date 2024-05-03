@@ -261,3 +261,7 @@ let lookup = {
     "_": subscript,
     "subscript": subscript
 }
+
+let ignoreNonLiteral = {
+    "x": true
+}
