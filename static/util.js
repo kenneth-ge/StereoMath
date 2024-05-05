@@ -140,3 +140,30 @@ function tokenizeWithSymbols(input) {
 function asyncTimeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function observable(v){
+    this.value = v;
+
+    this.valueChangedCallback = null;
+
+    this.setValue = function(v){
+        if(this.value != v){
+            this.value = v;
+            this.raiseChangedEvent(v);
+        }
+    };
+
+    this.getValue = function(){
+        return this.value;
+    };
+
+    this.onChange = function(callback){
+        this.valueChangedCallback = callback;
+    };
+
+    this.raiseChangedEvent = function(v){
+        if(this.valueChangedCallback){
+             this.valueChangedCallback(v);
+        }   
+    };
+}

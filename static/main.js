@@ -189,8 +189,14 @@ function create_new(type, parent, slot){
             parent.data[slot].push(ret)
         ret.id += "." + (parent.data[slot].length - 1)
     }else{
-        if(parent)
+        if(parent){
+            //console.log('this is the slot:', slot)
+            //console.log('this is ret:', ret)
             parent.data[slot] = ret
+            //console.log('change parent here:', parent)
+            //console.log(expression)
+            //console.log('parent of parent = expression', parent.parent == expression)
+        }
     }
 
     ret.render = type.render
@@ -224,7 +230,17 @@ function updateID(node, parentId=""){
     }
 }
 
-let expression = (JSON.parse(JSON.stringify(expr)) ); expression.id = "top"
+let expression = JSON.parse(JSON.stringify(expr))/*new Observer(JSON.parse(JSON.stringify(expr)), e=>{
+    if(e.keyPath.includes('data.inside')){
+        console.log(e)
+        console.log(e.object)
+        if(e.object.inside == 'a'){
+            console.log('BAD STUFF HERE')
+            console.trace()
+        }
+    }
+})*/
+expression.id = "top"
 expression.render = expr.render
 expression.symbol = expr.symbol
 expression.readaloud = expr.readaloud
@@ -232,16 +248,17 @@ expression.parent = undefined
 expression.data['inside'] = ''
 getById["top"] = expression
 
+const keyCallback = 'onkeydown'
 
 function renderInput(text, field, name, objID, idx=undefined){
     // aria-label="${field} of ${name}"
     // input.style.minWidth = (input.value.length) + 'ch';
-    return `<input style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} onkeydown="handleKeyDown(event, this)"/>`
+    return `<input style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} ${keyCallback}="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent, symbol, readaloud){
     // aria-label="before ${parent.name}" role="presentation"
-    return `<span role="presentation" custom-label="${readaloud}" class="separator divider" tabindex=-1 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span type="spacer" role="presentation" custom-label="${readaloud}" class="separator divider" tabindex=-1 myId="${parent.id}" id="${parent.id}.${type}" field="${type}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function makeSymbolSpan(symbol, parent, idx, readaloud){
@@ -249,7 +266,7 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
         return ``
     }
     // role="presentation"
-    return `<span tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" onkeydown="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -426,42 +443,61 @@ function genAriaLabel(latex, id){
     return SRE.toSpeech(mathml)
 }
 
+async function handleAutomaticInsertion(elem, lastToken){
+    //console.log('last token:', lastToken)
+    if(lookup.hasOwnProperty(lastToken) && !ignoreNonLiteral.hasOwnProperty(lastToken)){
+        // remove token
+        if(elem.tagName == 'INPUT'){
+            let updatedString = elem.value.substring(0, elem.value.length - lastToken.length)
+            elem.value = updatedString
+        }
+        
+        //var event = new Event('input', { bubbles: true });
+        //input.dispatchEvent(event);
+        //console.log(input)
+
+        // add element
+        let newElem = await autocompleteChanged(lastToken)
+
+        // focus on new element
+        // we shift the caret right, because typing is always left to right (on English keyboards)
+        //console.log('shift caret twice')
+        if(elem.tagName == 'INPUT'){
+            await shiftCaret(2)
+        }else{
+            // assert: elem.tagName == 'SPAN'
+            //await shiftCaret(0)
+        }
+        
+
+        readPos()
+        //console.log('done shifting')
+        return true
+    }
+    return false
+}
+
 async function handleValueChanged(input){
+    let fieldName = input.getAttribute("field")
+    let id = input.getAttribute("myID")
+
+    //console.log('type of thing:', typeof getById[id].data[fieldName], getById[id].data[fieldName])
+
+    getById[id].data[fieldName] = input.value
     input.style.minWidth = (input.value.length) + 'ch';
 
     ////////// AUTOMATICALLY INSERT ELEMENT, BUT ONLY DO THIS WHEN NOT IN LITERAL MODE //////////
+    // hack because onkeydown will trigger in span, and then trigger again input after focusing
     if(!isLiteralMode){
         let str = input.value
         let tokens = tokenizeWithSymbols(str)
-
+    
         let lastToken = tokens[tokens.length - 1]
 
-        //console.log('last token:', lastToken)
-        if(lookup.hasOwnProperty(lastToken) && !ignoreNonLiteral.hasOwnProperty(lastToken)){
-            // remove token
-            let updatedString = input.value.substring(0, input.value.length - lastToken.length)
-            input.value = updatedString
-            
-            //var event = new Event('input', { bubbles: true });
-            //input.dispatchEvent(event);
-            //console.log(input)
-
-            // add element
-            let newElem = await autocompleteChanged(lastToken)
-
-            // focus on new element
-            // we shift the caret right, because typing is always left to right (on English keyboards)
-            //console.log('shift caret twice')
-            await shiftCaret(2)
-            //console.log('done shifting')
-        }
+        //console.log('input automatic inserting:', lastToken)
+        handleAutomaticInsertion(input, lastToken)
     }
-
     /////////////////////////////////
-
-    let fieldName = input.getAttribute("field")
-    let id = input.getAttribute("myID")
-    getById[id].data[fieldName] = input.value
 
     updateMemoi(getById[id])
 }
@@ -566,6 +602,7 @@ async function autocompleteChanged(value) {
     let newItem = undefined
 
     if(!field){
+        console.log('outer div path')
         // this is an outer div
         //if this is 
         let node = getById[id]
@@ -591,15 +628,31 @@ async function autocompleteChanged(value) {
             return;
         }
     }else{
+        //debugger;
+        //console.log('append/add in here')
+        //console.log('parent:', getById[id].data)
+        //console.log('equals:', getById[id] == expression.data['inside'])
         newItem = create_new(lookup[value], getById[id], field)
         newItem.data[newItem.focus] = selected.value
-        
+
+        //console.log(getById[id].data['inside'])
         getById[id].data[field] = newItem
+        //console.log(getById[id].data['inside'])
+        
+        //getById[id].data[field] = newItem
+        //getById[id + '.' + field] = newItem
     }
 
+    //console.log("expression before rerender:", expression.data['inside'])
+
     rerender(newItem)
+    //updateID(newItem.parent)
+
+    //console.log("Expressoin after rerender:", expression.data['inside'])
 
     await focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
+
+    //console.log("expression after focus:", expression.data['inside'])
 
     /*console.log('rerender adding new item')
     console.log('selection is: ' + value)
@@ -667,8 +720,11 @@ async function focusElem(elem){
 }
 
 async function focusOnFind(id, selectionStart=0){
+    //console.log("expression before wait for elem:", expression.data['inside'])
     let elem = await waitForElm(id)
     
+    //console.log("expression before setting focusOn:", expression.data['inside'])
+
     elem.setAttribute('focusOn', selectionStart)
     elem.focus()
 }
@@ -905,6 +961,7 @@ function shiftCaret(delta){
     console.log(nextField)
     console.log(nextNode.id + '.' + nextField)*/
 
+    //console.log('next thing', nextField, nextNode.data[nextField])
     // also handle HCI components like playing tones and whatnot
     if(nextField == 'next' || nextField == 'prev' || nextField.includes('separator') || (typeof nextNode.data[nextField] == 'string')){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
@@ -914,8 +971,13 @@ function shiftCaret(delta){
                 if(associatedInput.value[0])
                     announceMessage(associatedInput.value[0])
                 associatedInput.setAttribute('focusOn', 0)
-            }else
-                associatedInput.setAttribute('focusOn', associatedInput.value.length)
+            }else{
+                //console.log(nextNode, nextNode.id, nextField)
+                //console.log(associatedInput)
+                if(associatedInput.value){
+                    associatedInput.setAttribute('focusOn', associatedInput.value.length)
+                }
+            }
         }
 
         focusElem(associatedInput)
@@ -1015,6 +1077,7 @@ function collapse(node, idx){
 
     //console.log('new element:', startingNode.id + '.' + ourSlot)
     let newElement = document.getElementById(startingNode.id + '.' + ourSlot)
+    //console.log("ID:", startingNode.id + '.' + ourSlot)
     newElement.setAttribute('focusOn', cursorPos)
 
     //updateMemoi(startingNode)
@@ -1069,12 +1132,25 @@ function erase(node){
     rerender(node.parent)
 }
 
-function handleKeyDown(event, input) {
+
+async function handleKeyDown(event, input) {
     const cursorPosition = input.selectionStart;
 
-    /*console.log('hi')
-    console.log(event.key)
-    console.log(input.selectionStart)*/
+    //console.log('this is the event:', event)
+    //console.log('is repeating:', event.repeat)
+    //console.log('this is the elem', input)
+    if(input.tagName == 'SPAN' && input.getAttribute("type") == 'spacer'){
+        let succ = await handleAutomaticInsertion(input, event.key)
+        
+        if(succ){
+            event.stopImmediatePropagation()
+            event.preventDefault()
+        }
+
+        //console.log('inserting elem')
+        //console.log(event)
+        //console.log('key', event.key)
+    } 
 
     if(event.key == 'Insert'){
         //narrate this element
@@ -1083,7 +1159,7 @@ function handleKeyDown(event, input) {
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){
         //narrate this element
-        console.log(input)
+        //console.log(input)
         announceMessage(input.value)
     }
 
@@ -1128,7 +1204,10 @@ function handleKeyDown(event, input) {
         event.stopPropagation();
     }
 
+    //console.log('getting to test if try to delete')
+    //console.log(event.key, input.tagName, input.selectionEnd)
     if(event.key == 'Backspace' && (input.tagName == 'SPAN' || input.selectionEnd == 0)){
+        console.log('try to delete')
         if(isSpatialMode){
             return
         }
@@ -1195,4 +1274,9 @@ function getlatex(){
         .catch(err => {
             announceMessage('Could not copy text: ', err);
         });
+}
+
+////// READ CURRENT POS, AND PROVIDE VERBAL CONTEXT
+function readPos(){
+
 }
