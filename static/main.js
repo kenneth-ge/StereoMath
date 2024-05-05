@@ -125,10 +125,14 @@ document.addEventListener("keydown", function(event) {
 
         if (selected && selected.tagName && selected.tagName.toLowerCase() === 'input' && selected.type.toLowerCase() === 'text'){
             let text = selected.value
-            let doneOnce = false
+
+            let tokens = tokenizeWithSymbols(text)
+            let lastToken = tokens[tokens.length - 1]
+
+            equation_picker.value = lastToken
 
             setTimeout(() => {
-                equation_picker.value = text
+                equation_picker.value = lastToken
             }, 50)
 
             // copy text over from current input field into equation picker
