@@ -483,6 +483,7 @@ async function handleAutomaticInsertion(elem, lastToken){
             //await shiftCaret(0)
         }
         
+        announceMessage(newElem.name)
 
         readPos()
         //console.log('done shifting')
@@ -581,6 +582,8 @@ async function reroot(node, parent, value, after){
     }else{
         await focusOnFind(newItem.id + "." + toFocusOn)
     }
+
+    return newItem
 }
 
 async function autocompleteChanged(value) {
@@ -625,21 +628,18 @@ async function autocompleteChanged(value) {
         //console.log('add to this node:')
         //console.log(node)
 
-        reroot(node, parent, value, false)
-        return;
+        return reroot(node, parent, value, false)
     }else if(selected.tagName == 'SPAN'){
         if(field == 'next'){
             let node = getById[id]
             let parent = node.parent
 
-            reroot(node, parent, value, false)
-            return;
+            return reroot(node, parent, value, false)
         }else{
             let node = getById[id]
             let parent = node.parent
 
-            reroot(node, parent, value, true)
-            return;
+            return reroot(node, parent, value, true)
         }
     }else{
         //debugger;
