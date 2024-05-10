@@ -3,7 +3,7 @@ let equation_picker = document.getElementById("equation-picker")
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'linear'
+    navStyle: 'equation'
 }
 
 let possibleSettings = {
@@ -29,7 +29,13 @@ function handleSpatial(event){
     //console.log(x, y)
 
     const topInputs = document.querySelectorAll('input[id^="top"]')
-    const {left, top, right, bottom} = document.getElementById('top').getBoundingClientRect()
+    
+    let boundaryid = 'top'
+    if(document.getElementById('top.inside')){
+        boundaryid = 'top.inside'
+    }
+
+    let {left, top, right, bottom} = document.getElementById(boundaryid).getBoundingClientRect()
     const totalsize = {
         x: right - left,
         y: bottom - top
@@ -37,8 +43,8 @@ function handleSpatial(event){
 
     // transform keyboard coords to actual coords, and move blue circle accordingly
     const blueCirc = document.getElementById('bluecirc')
-    blueCirc.style.left = (p.x * totalsize.x) + "px"; // Set the left position
-    blueCirc.style.top = (p.y * totalsize.y) + "px";   // Set the top position
+    blueCirc.style.left = (p.x * totalsize.x + left) + "px"; // Set the left position
+    blueCirc.style.top = (p.y * totalsize.y + top) + "px";   // Set the top position
 
     const rects = inputsToRects(topInputs)
 
