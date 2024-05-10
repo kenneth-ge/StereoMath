@@ -92,8 +92,8 @@ function handleSpatial(event){
         //console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
 
         synth.triggerAttackRelease("A3", "8n", now);
-        synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 0.5);
-        synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 1);
+        synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 0.5);
+        synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 1);
     }
 }
 
@@ -749,8 +749,6 @@ function floormod(a, b) {
 }
 
 let tone = document.getElementById('tone')
-let before = document.getElementById('before')
-let after = document.getElementById('after')
 
 function play(thing){
     thing.currentTime = 0
@@ -761,12 +759,12 @@ function switchTone(){
     play(tone)
 }
 
-function beforeTone(){
-    play(before)
+function beforeTone(field){
+    playOpenParen(calculateRelativePos(field).avg.x)
 }
 
-function afterTone(){
-    play(after)
+function afterTone(field){
+    playCloseParen(calculateRelativePos(field).avg.x)
 }
 
 /** 
@@ -987,9 +985,9 @@ function shiftCaret(delta){
         focusElem(associatedInput)
 
         if(nextField == 'next'){
-            afterTone()
+            afterTone(associatedInput)
         }else if(nextField == 'prev'){
-            beforeTone()
+            beforeTone(associatedInput)
         }else if(!nextField.includes('separator')){
             switchTone()
         }
@@ -1007,7 +1005,7 @@ function shiftCaret(delta){
 
         focusElem(associatedInput)
 
-        afterTone()
+        afterTone(associatedInput)
     }else{
         nextNode = nextNode.data[nextField]
         nextField = 'prev'
@@ -1016,7 +1014,7 @@ function shiftCaret(delta){
 
         focusElem(associatedInput)
 
-        beforeTone()
+        beforeTone(associatedInput)
     }
 
     return Math.sign(delta)

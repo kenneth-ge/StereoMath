@@ -167,3 +167,28 @@ function observable(v){
         }   
     };
 }
+
+function calculateRelativePos(input){
+    input = inputsToRects([input])[0]
+
+    const {left, top, right, bottom} = document.getElementById('top.inside').getBoundingClientRect()
+    const totalsize = {
+        x: right - left,
+        y: bottom - top
+    }
+
+    return {
+        min: {
+            x: (input.min.x - left) / totalsize.x,
+            y: (input.min.y - top) / totalsize.y,
+        },
+        max: {
+            x: (input.max.x - left) / totalsize.x,
+            y: (input.max.y - top) / totalsize.y,
+        },
+        avg: {
+            x: (input.min.x + input.max.x - 2 * left) / (2 * totalsize.x),
+            y: (input.min.y + input.max.y - 2 * top) / (2 * totalsize.y),
+        }
+    }
+}
