@@ -265,3 +265,90 @@ let lookup = {
 let ignoreNonLiteral = {
     "x": true
 }
+
+function save(expression){
+    function genJson(exp){
+        if(typeof exp == 'string'){
+            return exp
+        }
+
+        let ret = {}
+
+        for(var x in exp.data){
+            ret[x] = genJson(exp.data[x])
+        }
+
+        return {type: exp.name, data: ret}
+    }
+
+    let txt = JSON.stringify(genJson(expression))
+
+    const blob = new Blob([txt], {type: 'text/json'})
+
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.setAttribute(
+        'href', url
+    )
+    link.setAttribute(
+        'download', 'equation.json'
+    )
+
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+}
+
+function load(txt){
+    let obj = JSON.parse(txt)
+
+    function create(obj, parent, slot){
+        if(typeof obj == 'string')
+            return obj
+        let {type, data} = obj
+        let n = create_new(lookup[type], parent, slot)
+
+        for(var x in obj.data){
+            n.data[x] = create(obj.data[x], n, x)
+        }
+
+        return n
+    }
+
+    let final = create(obj, expression, 'inside')
+
+    expression.data['inside'] = final
+
+    rerender(expression)
+
+    return final
+}
+
+async function loadFile(){
+    const fileInput = document.getElementById('fileInput')
+    fileInput.click()
+
+    fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0]
+        if(file){
+            load(await readFile(file))
+        }
+    })
+}
+
+function readFile(file){
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+    
+        reader.onload = (event) => {
+            resolve(event.target.result)
+        }
+
+        reader.onerror = (event) => {
+            reject(event.target.error)
+        }
+
+        reader.readAsText(file)
+    })
+}
