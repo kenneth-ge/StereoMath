@@ -138,9 +138,9 @@ function handleSpatial(event){
         //console.log('playing notes:', 'A3', 'A3 shifted ' + numBefore, 'A3 shifted ' + inputCount)
         //console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
 
-        synth.triggerAttackRelease("A3", "8n", now);
-        synth.triggerAttackRelease(shiftTone("A3", rects.length - 1), "8n", now + 0.5);
-        synth.triggerAttackRelease(shiftTone("A3", bestCnt), "8n", now + 1);
+        synth.triggerAttackRelease("A3", "16n", now);
+        synth.triggerAttackRelease(shiftTone("A3", rects.length - 1), "16n", now + 0.25);
+        synth.triggerAttackRelease(shiftTone("A3", bestCnt), "16n", now + 0.5);
     }
 }
 
