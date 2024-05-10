@@ -125,8 +125,10 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
+        console.log('play sounds:', rects.length, bestCnt)
+
         //create a synth and connect it to the main output (your speakers)
-        /*const synth = new Tone.Synth().toDestination();
+        const synth = new Tone.Synth().toDestination();
         const now = Tone.now();
 
         //play a middle 'C' for the duration of an 8th note
@@ -136,9 +138,7 @@ function handleSpatial(event){
 
         synth.triggerAttackRelease("A3", "8n", now);
         synth.triggerAttackRelease(shiftTone("A3", rects.length - 1), "8n", now + 0.5);
-        synth.triggerAttackRelease(shiftTone("A3", bestCnt), "8n", now + 1);*/
-
-        console.log('play sounds:', rects.length, bestCnt)
+        synth.triggerAttackRelease(shiftTone("A3", bestCnt), "8n", now + 1);
     }
 }
 
