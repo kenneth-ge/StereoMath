@@ -125,6 +125,8 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
+        announceMessage(input.getAttribute('description') + ' ' + input.value)
+
         console.log('play sounds:', rects.length, bestCnt)
 
         //create a synth and connect it to the main output (your speakers)
@@ -1304,23 +1306,21 @@ async function handleKeyDown(event, input) {
     } else if (event.key === 'ArrowRight') {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
-        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length - 1){
-            // extra shift if we're at the very end of an input field
-            // aka already right before the operator
-            if(settings.navStyle == 'linear'){
+        if(settings.navStyle == 'linear'){
+            if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length - 1){
+                // extra shift if we're at the very end of an input field
+                // aka already right before the operator
                 if(input.value && cursorPosition >= input.value.length){
                     shiftCaret(2)
                 }else{
                     shiftCaret(1)
                 }
-            }else{
-                if(input.tagName == 'INPUT' && cursorPosition >= input.value.length)
-                    shiftCaret(1)
-                else if(input.tagName != 'INPUT'){
-                    shiftCaret(1)
-                }
+                event.preventDefault()
             }
-            event.preventDefault()
+        }else{
+            if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length){
+                shiftCaret(1)
+            }
         }
         event.stopPropagation();
     }
