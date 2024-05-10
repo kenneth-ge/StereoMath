@@ -110,16 +110,50 @@ function handleSpatial(event){
 let isSpatialMode = false
 let isLiteralMode = false
 let wasFocused = undefined
+
+let lastPressedCode = 0
+
 document.addEventListener("keydown", function(event) {
     //console.log('THIS KEYCODE:', event.code)
     // read aloud
-    if (event.ctrlKey && event.altKey && event.code == "BracketLeft"){
-        announceMessage(genAriaLabel(renderLaTeX(expression)))
+    let currentPressedCode = 0
+    if (event.altKey && event.code == "BracketLeft"){
+        currentPressedCode = 1
+
+        let toGen = expression
+        if(!event.ctrlKey){
+            let id = selected.getAttribute('myID')        
+            let currentNode = getById[id]
+
+            toGen = currentNode
+        }
+
+        let mathspeak = genAriaLabel(renderLaTeX(toGen))
+        announceMessage(mathspeak)
+
+        if(currentPressedCode == lastPressedCode)
+            putInBuffer(mathspeak)
     }
 
-    if (event.ctrlKey && event.altKey && event.code == "BracketRight"){
-        announceMessage(genRead(expression))
+    if (event.altKey && event.code == "BracketRight"){
+        currentPressedCode = 2
+
+        let toGen = expression
+        if(!event.ctrlKey){
+            let id = selected.getAttribute('myID')        
+            let currentNode = getById[id]
+
+            toGen = currentNode
+        }
+
+        let intuitive = genRead(toGen)
+        announceMessage(intuitive)
+
+        if(currentPressedCode == lastPressedCode)
+            putInBuffer(intuitive)
     }
+
+    lastPressedCode = currentPressedCode
 
     if (event.ctrlKey && event.altKey && event.code == "KeyL"){
         isLiteralMode = !isLiteralMode
@@ -1190,9 +1224,9 @@ async function handleKeyDown(event, input) {
         //console.log('key', event.key)
     } 
 
-    if(event.key == 'Insert'){
+    if(event.altKey && event.key == 'Insert'){
         //narrate this element
-        announceMessage(input.getAttribute('description'))
+        announceMessage(input.getAttribute('description') + ' ' + input.value)
     }
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){

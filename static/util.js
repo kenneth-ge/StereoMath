@@ -204,3 +204,15 @@ function announceMessage(message) {
 
     setTimeout(() => {alertDiv.textContent = ""; log.innerHTML = message + '<br>' + log.innerHTML}, 50)
 }
+
+function putInBuffer(text){
+    //document.getElementById("bufferTxt").value = text
+    //document.getElementById("buffer").style.display = 'flex'
+
+    const newTab = window.open('', '_blank')
+    newTab.document.writeln(text)
+}
+
+function closeBuffer(){
+    //document.getElementById("buffer").style.display = 'none'
+}
