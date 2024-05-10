@@ -125,7 +125,7 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
-        announceMessage(input.getAttribute('description') + ' ' + input.value)
+        announceMessage(topInputs[best].getAttribute('description') + ' ' + topInputs[best].value)
 
         console.log('play sounds:', rects.length, bestCnt)
 
