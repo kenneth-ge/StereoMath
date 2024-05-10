@@ -60,3 +60,10 @@ function isNavigation(event){
     let navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
     return navKeys.includes(event.key)
 }
+
+function pt2SegDist(x, minX, maxX){
+    if(minX <= x && x <= maxX){
+        return 0
+    }
+    return Math.min(Math.abs(x - minX), Math.abs(x - maxX))
+}

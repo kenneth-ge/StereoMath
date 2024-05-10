@@ -11,6 +11,7 @@ let possibleSettings = {
     navStyle: ['linear', 'equation']
 }
 
+let spatialNavMode = true
 function handleSpatial(event){
     event.preventDefault()
     event.stopPropagation()
@@ -46,9 +47,10 @@ function handleSpatial(event){
     blueCirc.style.left = (p.x * totalsize.x + left) + "px"; // Set the left position
     blueCirc.style.top = (p.y * totalsize.y + top) + "px";   // Set the top position
 
-    const rects = inputsToRects(topInputs)
+    let rects = inputsToRects(topInputs)
 
     // transform rect coordinates
+    var i = 0
     for(var r of rects){
         r.min.x -= left
         r.min.y -= top
@@ -59,24 +61,49 @@ function handleSpatial(event){
         r.min.y /= totalsize.y
         r.max.x /= totalsize.x
         r.max.y /= totalsize.y
+
+        r.idx = i
+
+        i += 1
     }
 
-    //console.log('Input rectangles:', rects)
-    //console.log(p)
+    // filter out only rects in this current row/col
+    // true corresponds to row, false to col
+    if(spatialNavMode){
+        let closestYDist = rects.reduce((acc, c) => {
+            return Math.min(acc, pt2SegDist(p.y, c.min.y, c.max.y))
+        }, 99999)
+        console.log(closestYDist)
+        rects = rects.filter(
+            (r) => pt2SegDist(p.y, r.min.y, r.max.y) <= closestYDist)
+        rects = rects.sort((a, b) => a.y - b.y)
+    }else{
+        // we do this in order to make sure that the set is nonempty
+        let closestXDist = rects.reduce((acc, c) => {
+            return Math.min(acc, pt2SegDist(p.x, c.min.x, c.max.x))
+        }, 99999)
+        rects = rects.filter(
+            (r) => pt2SegDist(p.x, r.min.x, r.max.x) <= closestXDist)
+        rects = rects.sort((a, b) => a.x - b.x)
+    }
+
+    spatialNavMode = !spatialNavMode
 
     var best = 0
     var bestDist = 999999
     var count = 0
+    var bestCnt = 0
     
     for(var r of rects){
         let dist = distance(r, p)
 
         if(dist < bestDist){
-            best = count
+            best = r.idx
+            bestCnt = count
             bestDist = dist
         }
-
-        count++
+        
+        count += 1
     }
 
     // isSpatialMode = false
@@ -96,10 +123,10 @@ function handleSpatial(event){
         let field = topInputs[best].getAttribute('field')
         let node = getById[id]
 
-        let numBefore = getNumBefore(node, field)
+        //let numBefore = getNumBefore(node, field)
 
         //create a synth and connect it to the main output (your speakers)
-        const synth = new Tone.Synth().toDestination();
+        /*const synth = new Tone.Synth().toDestination();
         const now = Tone.now();
 
         //play a middle 'C' for the duration of an 8th note
@@ -108,8 +135,10 @@ function handleSpatial(event){
         //console.log('A3', shiftTone("A3", numBefore), shiftTone("A3", inputCount - 1))
 
         synth.triggerAttackRelease("A3", "8n", now);
-        synth.triggerAttackRelease(shiftTone("A3", inputCount - 1), "8n", now + 0.5);
-        synth.triggerAttackRelease(shiftTone("A3", numBefore), "8n", now + 1);
+        synth.triggerAttackRelease(shiftTone("A3", rects.length - 1), "8n", now + 0.5);
+        synth.triggerAttackRelease(shiftTone("A3", bestCnt), "8n", now + 1);*/
+
+        console.log('play sounds:', rects.length, bestCnt)
     }
 }
 
@@ -1285,8 +1314,11 @@ async function handleKeyDown(event, input) {
                     shiftCaret(1)
                 }
             }else{
-                if(cursorPosition >= input.value.length)
+                if(input.tagName == 'INPUT' && cursorPosition >= input.value.length)
                     shiftCaret(1)
+                else if(input.tagName != 'INPUT'){
+                    shiftCaret(1)
+                }
             }
             event.preventDefault()
         }
