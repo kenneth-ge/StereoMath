@@ -1,6 +1,16 @@
 let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
 
+let settings = {
+    verbosity: 'high',
+    navStyle: 'linear'
+}
+
+let possibleSettings = {
+    verbosity: ['low', 'high'],
+    navStyle: ['linear', 'equation']
+}
+
 function handleSpatial(event){
     event.preventDefault()
     event.stopPropagation()
@@ -270,7 +280,7 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
         return ``
     }
     // role="presentation"
-    return `<span tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
+    return `<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
 
 function renderDiv(obj, myId="", field="", name="", idx=0){
@@ -761,10 +771,16 @@ function switchTone(){
 
 function beforeTone(field){
     playOpenParen(calculateRelativePos(field).avg.x)
+    if(settings.verbosity == 'high'){
+        announceMessage('L paren')
+    }
 }
 
 function afterTone(field){
     playCloseParen(calculateRelativePos(field).avg.x)
+    if(settings.verbosity == 'high'){
+        announceMessage('R paren')
+    }
 }
 
 /** 
@@ -805,7 +821,7 @@ let currIdx = 0
  * @param {int} delta 
  * @returns the amount of shift
  */
-function shiftCaret(delta){
+function shiftCaret(delta, announce=true, offset=0){
     /* ignore null shifts */
     if(delta == 0){
         return 0
@@ -864,7 +880,6 @@ function shiftCaret(delta){
             // field of separator is same as field of item when going left
             nextFieldIdx = currentNode.fields.indexOf(currentField)
             nextField = `separator${nextFieldIdx}`
-
     
             if(nextNode == expression.data['inside'] && field == 'prev'){
                 //document.getElementById('top.inside').focus()
@@ -970,26 +985,34 @@ function shiftCaret(delta){
         
         if(typeof nextNode.data[nextField] == 'string'){
             if(delta > 0){
-                if(associatedInput.value[0])
-                    announceMessage(associatedInput.value[0])
-                associatedInput.setAttribute('focusOn', 0)
+                if(announce && associatedInput.value[0 + offset])
+                    announceMessage(associatedInput.value[0 + offset])
+                associatedInput.setAttribute('focusOn', 0 + offset)
             }else{
                 //console.log(nextNode, nextNode.id, nextField)
                 //console.log(associatedInput)
                 if(associatedInput.value){
-                    associatedInput.setAttribute('focusOn', associatedInput.value.length)
+                    if(settings.navStyle == 'linear'){
+                        if(announce && associatedInput.value.length >= 1)
+                            announceMessage(associatedInput.value[associatedInput.value.length - 1 + offset])
+                        associatedInput.setAttribute('focusOn', Math.max(0, associatedInput.value.length - 1 + offset))
+                    }else{
+                        associatedInput.setAttribute('focusOn', Math.max(0, associatedInput.value.length + offset))
+                    }
                 }
             }
         }
 
         focusElem(associatedInput)
 
-        if(nextField == 'next'){
-            afterTone(associatedInput)
-        }else if(nextField == 'prev'){
-            beforeTone(associatedInput)
-        }else if(!nextField.includes('separator')){
-            switchTone()
+        if(announce){
+            if(nextField == 'next'){
+                afterTone(associatedInput)
+            }else if(nextField == 'prev'){
+                beforeTone(associatedInput)
+            }else if(!nextField.includes('separator')){
+                switchTone()
+            }
         }
 
         return Math.sign(delta)
@@ -1005,7 +1028,8 @@ function shiftCaret(delta){
 
         focusElem(associatedInput)
 
-        afterTone(associatedInput)
+        if(announce)
+            afterTone(associatedInput)
     }else{
         nextNode = nextNode.data[nextField]
         nextField = 'prev'
@@ -1014,7 +1038,8 @@ function shiftCaret(delta){
 
         focusElem(associatedInput)
 
-        beforeTone(associatedInput)
+        if(announce)
+            beforeTone(associatedInput)
     }
 
     return Math.sign(delta)
@@ -1141,8 +1166,19 @@ async function handleKeyDown(event, input) {
     //console.log('this is the event:', event)
     //console.log('is repeating:', event.repeat)
     //console.log('this is the elem', input)
-    if(input.tagName == 'SPAN' && input.getAttribute("type") == 'spacer'){
-        let succ = await handleAutomaticInsertion(input, event.key)
+    if(input.tagName == 'SPAN' && !isNavigation(event)){
+        let succ = false
+        if(input.getAttribute("type") == 'spacer')
+            succ = await handleAutomaticInsertion(input, event.key)
+        else if(settings.navStyle == 'linear'){
+            console.log('assert eq:', input.getAttribute("type"), 'symbol')
+            shiftCaret(-1, announce=false, offset=1)
+            // we will automatically handle insertion just by moving offset,
+            // so no need to run the line below (actually it glitches and deletes)
+            // the last char
+
+            //succ = await handleAutomaticInsertion(selected, event.key)
+        }
         
         if(succ){
             event.stopImmediatePropagation()
@@ -1199,8 +1235,19 @@ async function handleKeyDown(event, input) {
     } else if (event.key === 'ArrowRight') {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
-        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length){
-            shiftCaret(1)
+        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length - 1){
+            // extra shift if we're at the very end of an input field
+            // aka already right before the operator
+            if(settings.navStyle == 'linear'){
+                if(input.value && cursorPosition >= input.value.length){
+                    shiftCaret(2)
+                }else{
+                    shiftCaret(1)
+                }
+            }else{
+                if(cursorPosition >= input.value.length)
+                    shiftCaret(1)
+            }
             event.preventDefault()
         }
         event.stopPropagation();
@@ -1252,18 +1299,6 @@ async function handleKeyDown(event, input) {
 
         deleteFrom(node, idx)
     }
-}
-
-function announceMessage(message) {
-    if(!message)
-        return
-    //console.log('announcing:', message)
-
-    var alertDiv = document.getElementById('screenReaderAlert');
-    var log = document.getElementById('announcementLog')
-    alertDiv.textContent = message;
-
-    setTimeout(() => {alertDiv.textContent = ""; log.innerHTML = message + '<br>' + log.innerHTML}, 50)
 }
 
 function getlatex(){

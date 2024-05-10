@@ -55,3 +55,8 @@ function getLocation(key, code){
 
     return {x, y}
 }
+
+function isNavigation(event){
+    let navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+    return navKeys.includes(event.key)
+}

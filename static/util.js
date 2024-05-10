@@ -192,3 +192,15 @@ function calculateRelativePos(input){
         }
     }
 }
+
+function announceMessage(message) {
+    if(!message)
+        return
+    //console.log('announcing:', message)
+
+    var alertDiv = document.getElementById('screenReaderAlert');
+    var log = document.getElementById('announcementLog')
+    alertDiv.textContent = message;
+
+    setTimeout(() => {alertDiv.textContent = ""; log.innerHTML = message + '<br>' + log.innerHTML}, 50)
+}

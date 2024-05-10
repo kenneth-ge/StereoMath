@@ -4,8 +4,17 @@ let after = document.getElementById('after')
 function createSpatialObject(audioElem){
     const audioContext = new AudioContext()
 
-    const source1 = audioContext.createMediaElementSource(audioElem)
-    const source2 = audioContext.createMediaElementSource(audioElem)
+    const elem1 = document.createElement('audio')
+    const elem2 = document.createElement('audio')
+    
+    elem1.src = audioElem.src
+    elem1.controls = audioElem.controls
+
+    elem2.src = audioElem.src
+    elem2.controls = audioElem.controls
+
+    const source1 = audioContext.createMediaElementSource(elem1)
+    const source2 = audioContext.createMediaElementSource(elem2)
     
     const merger = audioContext.createChannelMerger(2)
     
@@ -26,12 +35,22 @@ function createSpatialObject(audioElem){
     return {
         playSpatial: (left, right) => {
             //console.log('left', left, 'right', right)
-            audioElem.currentTime = 0
+            elem1.currentTime = 0
+            elem2.currentTime = 0
         
             gainNode1.gain.value = left
             gainNode2.gain.value = right
             
-            audioElem.play()
+            // this small bit of latency probably matters
+            // for spatial audio since we use temporal
+            // cues
+            if(left >= right){
+                elem1.play()
+                elem2.play()
+            }else{
+                elem2.play()
+                elem1.play()
+            }
         }
     }
 }
