@@ -1,0 +1,125 @@
+5/10
+LOGISTICS
+* ASSETS-- July
+	* Poster-- talk about system design, iteratively co-design
+	* Demo paper-- search ASSETS 2023 for posters/demo papers to see what that entails
+* CHI-- September
+
+DONE:
+* Make parentheses shorter
+* Announce op during auto insert
+* Jump past the end of the text field (skip "Blank")
+	* Use cursors
+* Aria label for the sonification cue (parentheses)
+	* Add option-- verbosity setting
+* Parentheses-- mix volume so that we can convey the location of the parentheses
+	* Same instrument but different notes?
+		* E.g. VScode tree view-- open is one way, closing is another
+		* Or like left parentheses (->) right parentheses (<-)
+			* Maybe have audio move to the left and right
+	* Conduct user studies in people and get their preference-- see what earcons can be easily associated with functionality. I.e. leave these as preferences that you can change
+		* Sound theme/scheme
+* Move reference tones to beginning-- i.e. instead of BEG, CUR, END => BEG, END, CUR
+	* Option to only play range when the range changes
+		* This would be helpful for telling if these things are aligned
+* Implement review mode and edit mode
+* Have option to read just the current node instead of just (CTRL + ALT + ]) for the whole thing
+	* E.g. (CTRL + ALT + \)
+		* ALT + SHIFT + [ for mathspeak
+			* ALT + [ for mathspeak for current node
+		* ALT + SHIFT + ] for intuitive readaloud
+			* ALT + ] for intuitive readaloud for current node
+* Put readaloud in text buffer after pressing (CTRL + ALT + [) or (CTRL + ALT + ]) twice
+	* Aka put it in a read-only text field popup dialog window in HTML
+* Text field: add 'role="application"'
+	* Children will inherit from parent
+* Have spatial keyboard correspond to size/width of equation, rather than width of screen
+* A complicated equation has rows and columns, can we reference the beginning/end of the row or the beginning/end of the column instead?
+	* Think of equation as a table
+	* Add this as an extra configuration-- end of column, end of row, end of entire equation
+	* One key to cycle between these modes
+* Make spatial nav sounds shorter
+* Say the contents of the field after navigating somewhere spatially
+* Loading feature? Ability to read/write equations
+* Change row/col spatial behavior to cycle between using CTRL + ESC
+
+
+WAITING:
+* Is this new behavior with the navigation and parentheses confusing?
+	* I just feel like fundamentaly an equation editor is different behavior and *shouldn't* act just like any other linear text editor, because it's fundamentally *not* linear. The whole point is automatic completion, and having "blank"s there is a better representation (and arguably more intuitive). Also, for sighted users this is how the experience is... luckily, I can change it with one setting change
+* Create sample equations using audio scheme
+	* E.g. testing reading vs just writing
+		* To test our audio/reviewing scheme
+		* Test against the baseline
+		* Introduce 2-3 conditions, test against
+			E.g. JAWS MathViewer, linear, etc. 
+		* Ask them to describe the equation-- "what do you think te spatial layout looks like..."
+			* Accuracy, preference, etc. 
+	* Using experiment to justify design choice
+* Should we use a shortcut/special case for associative operators?
+	* Upside: simpler and makes more sense, e.g. (a + b + c) = ((a + b) + c) = (a + (b + c))
+	* Downside: what if you want to break it up in the middle? Editing becomes harder, because:
+		(a + b + c) => ((a + b) / 5) + c is much harder to do
+			But then again, if you have (a + (b + c)), it's hard to do here as well
+	* Basically, how should we handle associative operators and stuff? E.g. should we allow people to select multiple fields at once? Or even multiple nodes etc.?
+
+TO DO:
+* Kill synth sound if user presses another spatial position?
+* Question: How do other blind folks digest spatial audio?
+* Features for later:
+	* Implement tables
+	* CTRL + Z for undo
+	* Removing unnecessary parentheses?
+	* Associative operators?
+
+
+
+Before 5/7
+
+DONE
+* Change insert key
+* Unlabeled button
+* Insert mode vs navigation
+	* Change to toggle
+* Fix going all the way left readaloud
+	* Change sound for going all the way left
+* Fix deleting on input field
+* Get LaTeX-- copy to clipboard
+* Navigate through internal symbols (e.g. plus)
+* Full readaloud not working
+* Make sure to read inbetween symbols in e.g. this case: (a - b) * (c - d)
+	* Right now it skips the *
+* Why isn't it reading char by char?
+* Preserve input size
+* Visualize keyboard navigation
+* Fix bug with backspace in navigation mode
+* Automatic insertion for text fields
+* Automatically do minus, plus, fraction, etc. 
+* Automatic insertion for groupings/separators
+
+WAITING
+* See why not reading aloud
+* Change to separate key combination or button to read the whole expression
+* Keep same audio for beginning vs end, but use different spatial orientation
+* Associative operators
+
+NOT DONE
+* Limit to either left/right or up/down
+	* Up/down should read the field
+* Read aloud with feedback--
+	* When navigating spatially-- provide some context (e.g. right before or right after)
+
+
+* What is a unit or item?
+	* Numerator or denominator are items
+		* Fraction is a "vector"
+	* Unit-- anything that is not an input field in our tree
+* "Node and field"
+	* When you navigate spatially:
+* Two types of spatial navigation: 2D spatial navigation in the actual physical representation, vs left/rightness in the tree (i.e. how many nodes are to the right/left)
+
+* Make two demos-- one that tells you how many nodes to left/right based on tree, and one that just reads things that are directly to the left and right (we can try to spatial audio for that?)
+	* For telling you left/rightedness, use piano (e.g. C3 (min) C4 (max) E3 (where you are))
+
+
+Screen reader reads aloud a letter if you're right before it
