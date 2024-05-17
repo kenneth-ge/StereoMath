@@ -11,6 +11,7 @@ let possibleSettings = {
     navStyle: ['linear', 'equation']
 }
 
+// true/false for row/col
 let spatialNavMode = true
 function handleSpatial(event){
     event.preventDefault()
@@ -86,8 +87,6 @@ function handleSpatial(event){
             (r) => pt2SegDist(p.x, r.min.x, r.max.x) <= closestXDist)
         rects = rects.sort((a, b) => a.x - b.x)
     }
-
-    spatialNavMode = !spatialNavMode
 
     var best = 0
     var bestDist = 999999
@@ -234,7 +233,18 @@ document.addEventListener("keydown", function(event) {
 
         // enter spatial navigation mode
         if(event.metaKey){
-            isSpatialMode = !isSpatialMode
+            // if not in spatial, start in spatial
+            if(!isSpatialMode){
+                isSpatialMode = !isSpatialMode
+                spatialNavMode = true
+            }else{
+                // if already in spatial, then cycle row -> col -> off
+                if(!spatialNavMode){
+                    isSpatialMode = false
+                }else{
+                    spatialNavMode = false
+                }
+            }
         }
     }
 
