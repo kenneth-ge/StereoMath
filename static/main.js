@@ -3,7 +3,7 @@ let equation_picker = document.getElementById("equation-picker")
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'equation'
+    navStyle: 'linear'
 }
 
 let possibleSettings = {
@@ -226,22 +226,26 @@ document.addEventListener("keydown", function(event) {
             });*/
         }
     }
-    if(event.code == "Escape"){
+    if(event.code == "Backquote"){
         // leave select
         autocomplete.classList.add("hidden")
         if(wasFocused) wasFocused.focus()
 
         // enter spatial navigation mode
-        if(event.metaKey){
+        if(event.shiftKey){
             // if not in spatial, start in spatial
             if(!isSpatialMode){
                 isSpatialMode = !isSpatialMode
                 spatialNavMode = true
+                announceMessage("Spatial navigation activated: row mode")
             }else{
                 // if already in spatial, then cycle row -> col -> off
                 if(!spatialNavMode){
                     isSpatialMode = false
+                    announceMessage("Spatial navigation off")
+                    event.preventDefault()
                 }else{
+                    announceMessage("Spatial navigation activated: column mode")
                     spatialNavMode = false
                 }
             }
@@ -346,9 +350,9 @@ getById["top"] = expression
 const keyCallback = 'onkeydown'
 
 function renderInput(text, field, name, objID, idx=undefined){
-    // aria-label="${field} of ${name}"
+    // 
     // input.style.minWidth = (input.value.length) + 'ch';
-    return `<input role="application" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} ${keyCallback}="handleKeyDown(event, this)"/>`
+    return `<input aria-label="${field} of ${name}" role="application" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} ${keyCallback}="handleKeyDown(event, this)"/>`
 }
 
 function spacer(type, parent, symbol, readaloud){
@@ -1068,6 +1072,7 @@ function shiftCaret(delta, announce=true, offset=0){
             if(delta > 0){
                 if(announce && associatedInput.value[0 + offset])
                     announceMessage(associatedInput.value[0 + offset])
+                console.log('focus on this:', 0 + offset)
                 associatedInput.setAttribute('focusOn', 0 + offset)
             }else{
                 //console.log(nextNode, nextNode.id, nextField)
@@ -1330,6 +1335,7 @@ async function handleKeyDown(event, input) {
         }else{
             if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length){
                 shiftCaret(1)
+                event.preventDefault()
             }
         }
         event.stopPropagation();

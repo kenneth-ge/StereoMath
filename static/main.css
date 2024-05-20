@@ -1,11 +1,12 @@
 .block {
-    background-color: #FF6961;
+    background-color: black;
     display: flex;
     flex: 1;
     padding: 5px;
     margin: 5px;
     font-size: 50px; /* Increase font size */
     font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+    font-weight: bold;
     justify-content: space-around;
     align-items: center;
 }
@@ -26,14 +27,22 @@
 }
 
 .placeholder {
+  background-color: black;
+  color: white;
+  font-weight: bold;
     height: 50px;
     width: 50px;
     min-width: 50px; /* Set a minimum width */
     box-sizing: content-box;
-    padding: 8px;
-    margin-bottom: 10px;
-    font-size: 36px; /* Increase font size */
+    border: none;
+    /*padding: 8px;
+    margin-bottom: 10px;*/
+    font-size: 45px; /* Increase font size */
     font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+}
+
+.placeholder:focus{
+  background-color: yellow;
 }
 
 #top\.next {
@@ -87,6 +96,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color:white;
   }
   
   .separator:hover,
