@@ -22,6 +22,10 @@ app.get('/', (req, res) => {
   res.render('editor')  // Replace with your main HTML file if different
 });
 
+app.get('/testinput', (req, res) => {
+  res.render('testinput')  // Replace with your main HTML file if different
+});
+
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

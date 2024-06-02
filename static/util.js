@@ -137,6 +137,17 @@ function tokenizeWithSymbols(input) {
     return tokens.filter(token => token !== '' && token && !(/^\s*$/.test(token)));
 }
 
+function tokenizeWithSymbolsAndSpaces(input) {
+    // Construct regular expression pattern to split the input string
+    const regexPattern = /(\s+)|([^\w\s])/g;
+    
+    // Split the input string using the regular expression pattern
+    const tokens = input.split(regexPattern);
+    
+    // Filter out empty strings from the resulting array
+    return tokens.filter(token => token !== '' && token);
+}
+
 function asyncTimeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

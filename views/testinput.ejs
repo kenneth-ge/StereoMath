@@ -1,0 +1,246 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <style>
+            body {
+                font-size: 50px; /* Increase font size */
+                font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+                font-weight: bold;
+                /*background-color: red;*/
+                width: 100%;
+                margin: 0;
+            }
+
+            .inputfield {
+                max-width: 100%;
+                background-color: gray;
+                display: flex;
+                flex-direction: row;
+                padding: 50px;
+                /*
+                background-color: black;
+                */
+            }
+
+            .caret {
+                width: 5px; /* Adjust width as needed */
+                /* height: 100%; Full height of the container */
+                background-color: orange; /* Caret color */
+                animation: blink 1s step-end infinite; /* Blinking animation */
+                opacity: 50%;
+            }
+
+            .caretend {
+                background-color: blue;
+                opacity: 50%;
+            }
+
+            .char {
+                color: green;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="inputfield" id="inputfield">
+            <span class="caret" id="caret"></span>
+            <span class="caret caretend" id="caretend"></span>
+        </div>
+        <script type="text/javascript" src="util.js"></script>
+        <script>
+            let caret = 0
+            let caretend = 0
+            let string = ""
+
+            function createCharDiv(c){
+                let div = document.createElement('div')
+
+                // handle special escape chars
+                if(c == ' '){
+                    c = '&nbsp;'
+                }
+                div.innerHTML = c
+                div.setAttribute('class', 'char')
+
+                return div
+            }
+
+            function addCarets(textfield, caretDiv, caretendDiv, isCaret, isCaretEnd){
+                if(isCaret && isCaretEnd){
+                    caretendDiv.style.marginLeft = "-5px";
+                }else if(isCaret ^ isCaretEnd){
+                    caretendDiv.style.marginLeft = "0px";
+                }
+
+                if(isCaret){
+                    textfield.appendChild(caretDiv)
+                }
+                if(isCaretEnd){
+                    textfield.appendChild(caretendDiv)
+                }
+            }
+
+            // update UI accordingly
+            function updateUI(updatecaret, updatecaretend){
+                //console.log(caret, caretend)
+
+                let textfield = document.getElementById('inputfield')
+                let caretDiv = document.getElementById('caret')
+                let caretendDiv = document.getElementById('caretend')
+
+                textfield.removeChild(caretDiv)
+                textfield.removeChild(caretendDiv)
+
+                textfield.innerHTML = ""
+
+                let counter = 0
+                for(var c of string){
+                    addCarets(textfield, caretDiv, caretendDiv, counter == caret, counter == caretend)
+                    textfield.appendChild(createCharDiv(c))
+                    counter += 1
+                }
+                addCarets(textfield, caretDiv, caretendDiv, caret == string.length, caretend == string.length)
+            }
+
+            function getTokenShift(left){
+                if(left){
+                    let tokens = tokenizeWithSymbolsAndSpaces(string.substring(0, caretend))
+                    //console.log(string, string.substring(0, caretend), tokens)
+                    let shift = tokens.length > 0 ? tokens[tokens.length - 1].length : 0
+
+                    // last token is all whitespace
+                    if(tokens.length > 1 && /^\s*$/.test(tokens[tokens.length - 1])){
+                        shift += tokens[tokens.length - 2].length
+                    }
+
+                    return shift
+                }else{
+                    let tokens = tokenizeWithSymbolsAndSpaces(string.substring(caretend, string.length))
+                    //console.log(string, string.substring(caretend, string.length), tokens)
+                    let shift = tokens.length > 0 ? tokens[0].length : 0
+
+                    // last token is all whitespace
+                    if(tokens.length > 1 && /^\s*$/.test(tokens[0])){
+                        shift += tokens[1].length
+                    }
+
+                    return shift
+                }
+            }
+
+            document.addEventListener("keydown", function(event) {
+                /*console.log(event.key)
+                console.log(event.keyCode)
+                console.log(event.key.length)*/
+
+                let left = event.code == 'ArrowLeft'
+                let right = event.code == 'ArrowRight'
+
+                // move caret end
+                if(left || right){
+                    let delta = left ? -1 : 1
+
+                    // calculate token shift
+                    if(event.ctrlKey){
+                        delta *= getTokenShift(left)
+                    }
+
+                    // no shift if we would go over
+                    if(caretend + delta < 0 || caretend + delta > string.length){
+                        delta = 0
+                    }
+
+                    caretend += delta
+
+                    let updatecaret = false
+                    // handle shift modifier
+                    if(!event.shiftKey){
+                        if(caret + delta < 0 || caret + delta > string.length){
+                            delta = 0
+                        }
+                        caret += delta
+                        caretend = caret
+                        updatecaret = true
+                    }
+
+                    updateUI(updatecaret, true)
+                }
+
+                // type char
+                if(!event.ctrlKey)
+                if(event.key.length == 1){
+                    let start = string.substring(0, Math.min(caret, caretend))
+                    let end = string.substring(Math.max(caret, caretend), string.length)
+                    string = start + event.key + end
+
+                    // update caret
+                    caret = Math.min(caret, caretend) + 1
+                    caretend = caret
+                    updateUI(true, true)
+                }
+
+                // delete char
+                if(event.key == 'Backspace' || event.key == 'Delete'){
+                    let start = undefined
+                    let end = undefined
+                    let offset = 0
+
+                    // delete single char
+                    if(caret == caretend){
+                        if(event.ctrlKey){
+                            let left = event.key == 'Backspace'
+
+                            // delete token if necessary
+                            let amtDelete = getTokenShift(left)
+
+                            if(left){
+                                start = string.substring(0, caret - amtDelete)
+                                end = string.substring(caret, string.length)
+                            }else{
+                                start = string.substring(0, caret)
+                                end = string.substring(caret + amtDelete, string.length)
+                            }
+
+                            offset = left ? -amtDelete : 0
+                        }else{
+                            // delete before cursor
+                            if(event.key == 'Backspace'){
+                                if(caret > 0){
+                                    start = string.substring(0, caret - 1)
+                                    end = string.substring(caret, string.length)
+                                    offset = -1
+                                }else{
+                                    // trying to delete empty
+                                }
+                            }else{
+                                // delete after cursor
+                                if(caret < string.length){
+                                    start = string.substring(0, caret)
+                                    end = string.substring(caret + 1, string.length)
+                                    offset = 0
+                                }else{
+                                    // trying to delete empty
+                                }
+                            }
+                        }
+                    }else{
+                        // delete selection
+                        start = string.substring(0, Math.min(caret, caretend))
+                        end = string.substring(Math.max(caret, caretend), string.length)
+                    }
+
+                    if(start == undefined || end == undefined){
+                        return
+                    }
+
+                    string = start + end
+
+                    //console.log(caret, caretend, string.length)
+                    // update caret
+                    caret = Math.min(caret, caretend) + offset
+                    caretend = caret
+                    updateUI(true, true)
+                }
+            });
+        </script>
+    </body>
+</html>
