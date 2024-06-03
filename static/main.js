@@ -3,7 +3,7 @@ let equation_picker = document.getElementById("equation-picker")
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'equation'
+    navStyle: 'linear'
 }
 
 let possibleSettings = {
@@ -1071,17 +1071,17 @@ function shiftCaret(delta, announce=true, offset=0){
         if(typeof nextNode.data[nextField] == 'string'){
             let value = getField(associatedInput).getValue()
             if(delta > 0){
-                if(announce && value[0 + offset])
+                /*if(announce && value[0 + offset])
                     announceMessage(value[0 + offset])
-                console.log('focus on this:', 0 + offset)
+                console.log('focus on this:', 0 + offset)*/
                 associatedInput.setAttribute('focusOn', 0 + offset)
             }else{
                 //console.log(nextNode, nextNode.id, nextField)
                 //console.log(associatedInput)
                 if(value){
                     if(settings.navStyle == 'linear'){
-                        if(announce && value.length >= 1)
-                            announceMessage(value[value.length - 1 + offset])
+                        /*if(announce && value.length >= 1)
+                            announceMessage(value[value.length - 1 + offset])*/
                         associatedInput.setAttribute('focusOn', Math.max(0, value.length - 1 + offset))
                     }else{
                         associatedInput.setAttribute('focusOn', Math.max(0, value.length + offset))

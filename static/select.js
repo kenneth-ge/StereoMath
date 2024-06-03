@@ -1,4 +1,12 @@
-let charList = ['"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ']
+let charList = 
+[' ', '`', ' ', ' ', 'j', ' ', 'z', 'x', ' ', 'v', 'q', 'u', 'l', 'n', 'm', 'p', 'g', 'f', 'y', 'w', 't', 's', 'r', 'o', 'k', 'i', 'h', 'e', 'c', 'd', 'b', 'a', ' ', '_', ' ', ' ', '\\', 'Z', ' ', 'Y', 'W', 'P', 'U', 'V', 'T', 'Q', 'R', 'X', 'K', 'S', 'N', 'O', 'G', 'L', 'M', 'I', 'J', 'H', 'F', 'E', 'C', 'D', 'B', '?', ';', '@', '=', '>', 'A', '6', '9', ':', '8', '7', '5', '3', '4', '2', '1', '0', '/', '-', '.', '+', ' ', ' ', ' ', ' ', '&', '%', ' ', '$', '#', ' ', '!', ' ', ' ', '^', '*', '(', ')', '[', ']', '{', '}', '|', '<', ',', '"', "'"]
+/*
+[' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', 
+'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 
+'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 
+'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 
+'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 
+'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ']*/
 let charAudioMap = {}
 
 for(var i = 0; i < charList.length; i++){
@@ -120,16 +128,16 @@ function createInput(){
 
     /** play this char, but in a spatial context */
     function spatialChar(c){
-        if(c.length > 1){
+        if(c.length > 1 || !charAudioMap[c]){
             // fallback if we accidentally put a string in here, rather than a char
             announceMessage(c)
-            console.error(c, 'should be one single char')
+            console.error(c, 'should be one single char or missing audio file')
             return;
         }
 
         let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
 
-        console.log('playspatial', c, charAudioMap[c], spatialPos)
+        //console.log('playspatial', c, charAudioMap[c], spatialPos)
 
         charAudioMap[c].playSpatial(1 - spatialPos, spatialPos)
     }
@@ -322,6 +330,8 @@ function createInput(){
     }
 
     function select(div){
+        switchTone()
+
         amSelecting(div)
         handleKeys = true
 
