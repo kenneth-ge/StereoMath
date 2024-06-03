@@ -351,6 +351,8 @@ function renderInput(text, field, name, objID, idx=undefined){
     newInputField = createInput()
     inputFields[inputFieldCtr] = newInputField
     inputFieldCtr++
+
+    waitForElm(`${objID}.${field}`).then(e => getField(e).setCaret(0, 0))
     
     return newInputField.html(inputFieldCtr - 1, text, field, name, objID, idx)
 }
