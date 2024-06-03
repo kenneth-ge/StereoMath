@@ -42,10 +42,15 @@
             .highlighted {
                 background-color: yellow;
             }
+
+            .inputfield:focus {
+                background-color: #0056b3;
+                border-color: #0056b3;
+            }
         </style>
     </head>
     <body>
-        <div class="inputfield" id="inputfield">
+        <div class="inputfield" id="inputfield" tabindex="0">
             <span class="caret" id="caret"></span>
             <span class="caret caretend" id="caretend"></span>
         </div>
@@ -144,11 +149,7 @@
                 }
             }
 
-            document.addEventListener("keydown", function(event) {
-                /*console.log(event.key)
-                console.log(event.keyCode)
-                console.log(event.key.length)*/
-
+            function handleKey(event){
                 let left = event.code == 'ArrowLeft'
                 let right = event.code == 'ArrowRight'
 
@@ -176,7 +177,7 @@
                         }
                         caret += delta
                         caretend = caret*/
-                        if(Math.abs(caret - caretend) > 2){
+                        if(Math.abs(caret - caretend) > 2 && !event.ctrlKey){
                             caretend -= delta
                         }
                         caret = caretend
@@ -261,6 +262,14 @@
                     caretend = caret
                     updateUI(true, true)
                 }
+            }
+
+            document.addEventListener("keydown", function(event) {
+                /*console.log(event.key)
+                console.log(event.keyCode)
+                console.log(event.key.length)*/
+
+                handleKey(event)
             });
         </script>
     </body>

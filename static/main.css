@@ -42,7 +42,7 @@
 }
 
 .placeholder:focus{
-  background-color: yellow;
+  /*background-color: yellow;*/
 }
 
 #top\.next {
@@ -120,3 +120,39 @@
     display: flex;
     flex: 9;
   }
+
+  .inputfield {
+    max-width: 100%;
+    background-color: black;
+    display: flex;
+    flex-direction: row;
+    /*
+    padding: 50px;
+    background-color: black;
+    */
+}
+
+.caret {
+    min-width: 10px; /* Adjust width as needed */
+    /* height: 100%; Full height of the container */
+    background-color: orange; /* Caret color */
+    animation: blink 1s step-end infinite; /* Blinking animation */
+    /*opacity: 50%;*/
+    z-index: 5;
+}
+
+.caretend {
+    background-color: blue;
+    animation: blink 1s step-end infinite;
+    /*opacity: 50%;*/
+    z-index: 5;
+}
+
+.char {
+    color: white;
+    z-index: 1;
+}
+
+.highlighted {
+    background-color: yellow;
+}

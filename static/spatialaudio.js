@@ -1,5 +1,6 @@
 let before = document.getElementById('before')
 let after = document.getElementById('after')
+let endClick = document.getElementById('endClick')
 
 function createSpatialObject(audioElem){
     const audioContext = new AudioContext()
@@ -57,6 +58,7 @@ function createSpatialObject(audioElem){
 
 openObj = createSpatialObject(before)
 closeObj = createSpatialObject(after)
+endClickObj = createSpatialObject(endClick)
 
 function playOpenParen(pos=0.5){
     //console.log('pos', pos)
@@ -66,4 +68,9 @@ function playOpenParen(pos=0.5){
 function playCloseParen(pos=0.5){
     //console.log('pos', pos)
     closeObj.playSpatial(1 - pos, pos)
+}
+
+function playEndClick(pos=0.5){
+    //console.log('pos', pos)
+    endClickObj.playSpatial(1 - pos, pos)
 }

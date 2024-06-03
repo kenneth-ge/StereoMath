@@ -3,7 +3,7 @@ let equation_picker = document.getElementById("equation-picker")
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'linear'
+    navStyle: 'equation'
 }
 
 let possibleSettings = {
@@ -24,11 +24,6 @@ function handleSpatial(event){
     }
 
     let p = loc
-
-    //console.log(event.key)
-    //console.log(event.code)
-
-    //console.log(x, y)
 
     const topInputs = document.querySelectorAll('input[id^="top"]')
     
@@ -124,7 +119,7 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
-        announceMessage(topInputs[best].getAttribute('description') + ' ' + topInputs[best].value)
+        announceMessage(topInputs[best].getAttribute('description') + ' ' + getField(topInputs[best]).getValue())
 
         console.log('play sounds:', rects.length, bestCnt)
 
@@ -349,10 +344,15 @@ getById["top"] = expression
 
 const keyCallback = 'onkeydown'
 
+let inputFields = {}
+let inputFieldCtr = 0
+
 function renderInput(text, field, name, objID, idx=undefined){
-    // 
-    // input.style.minWidth = (input.value.length) + 'ch';
-    return `<input aria-label="${field} of ${name}" role="application" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} ${keyCallback}="handleKeyDown(event, this)"/>`
+    newInputField = createInput()
+    inputFields[inputFieldCtr] = newInputField
+    inputFieldCtr++
+    
+    return newInputField.html(inputFieldCtr - 1, text, field, name, objID, idx)
 }
 
 function spacer(type, parent, symbol, readaloud){
@@ -407,7 +407,6 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
                         }else{
                             //console.log('this is our id: ' + obj.id)
                             total += renderInput('', field, obj.name, obj.id)
-                            //total += `<input aria-label="${field} of ${obj.name}" tabindex="0" type="text" class="placeholder" id="${obj.id}.${field}" myId="${obj.id}" field="${field}" onfocus="amSelecting(this)" onchange="handleValueChanged(this)" oninput="this.style.width = (this.value.length) + 'ch';"/>`
                         }
                     }
                 }
@@ -438,7 +437,8 @@ function amSelecting(input){
     }
 
     if(focusOn){
-        input.setSelectionRange(focusOn, focusOn)
+        let fieldNum = input.getAttribute('fieldNum')
+        inputFields[fieldNum].setCaret(focusOn, focusOn)
         input.removeAttribute('focusOn')
     }
 
@@ -546,9 +546,10 @@ async function handleAutomaticInsertion(elem, lastToken){
     //console.log('last token:', lastToken)
     if(lookup.hasOwnProperty(lastToken) && !ignoreNonLiteral.hasOwnProperty(lastToken)){
         // remove token
-        if(elem.tagName == 'INPUT'){
-            let updatedString = elem.value.substring(0, elem.value.length - lastToken.length)
-            elem.value = updatedString
+        if(elem.getAttribute('type') == 'input'){
+            let val = getField(elem).getValue()
+            let updatedString = val.substring(0, val.length - lastToken.length)
+            getField(elem).setText(updatedString)
         }
         
         //var event = new Event('input', { bubbles: true });
@@ -561,7 +562,7 @@ async function handleAutomaticInsertion(elem, lastToken){
         // focus on new element
         // we shift the caret right, because typing is always left to right (on English keyboards)
         //console.log('shift caret twice')
-        if(elem.tagName == 'INPUT'){
+        if(elem.getAttribute('type') == 'input'){
             await shiftCaret(2)
         }else{
             // assert: elem.tagName == 'SPAN'
@@ -577,19 +578,19 @@ async function handleAutomaticInsertion(elem, lastToken){
     return false
 }
 
-async function handleValueChanged(input){
+async function handleValueChanged(input, inputValue){
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
 
     //console.log('type of thing:', typeof getById[id].data[fieldName], getById[id].data[fieldName])
 
-    getById[id].data[fieldName] = input.value
-    input.style.minWidth = (input.value.length) + 'ch';
+    getById[id].data[fieldName] = inputValue
+    input.style.minWidth = (inputValue.length) + 'ch';
 
     ////////// AUTOMATICALLY INSERT ELEMENT, BUT ONLY DO THIS WHEN NOT IN LITERAL MODE //////////
     // hack because onkeydown will trigger in span, and then trigger again input after focusing
     if(!isLiteralMode){
-        let str = input.value
+        let str = inputValue
         let tokens = tokenizeWithSymbols(str)
     
         let lastToken = tokens[tokens.length - 1]
@@ -732,7 +733,7 @@ async function autocompleteChanged(value) {
         //console.log('parent:', getById[id].data)
         //console.log('equals:', getById[id] == expression.data['inside'])
         newItem = create_new(lookup[value], getById[id], field)
-        newItem.data[newItem.focus] = selected.value
+        newItem.data[newItem.focus] = getField(selected).getValue()
 
         //console.log(getById[id].data['inside'])
         getById[id].data[field] = newItem
@@ -821,7 +822,6 @@ async function focusElem(elem){
 async function focusOnFind(id, selectionStart=0){
     //console.log("expression before wait for elem:", expression.data['inside'])
     let elem = await waitForElm(id)
-    
     //console.log("expression before setting focusOn:", expression.data['inside'])
 
     elem.setAttribute('focusOn', selectionStart)
@@ -1069,21 +1069,22 @@ function shiftCaret(delta, announce=true, offset=0){
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
         
         if(typeof nextNode.data[nextField] == 'string'){
+            let value = getField(associatedInput).getValue()
             if(delta > 0){
-                if(announce && associatedInput.value[0 + offset])
-                    announceMessage(associatedInput.value[0 + offset])
+                if(announce && value[0 + offset])
+                    announceMessage(value[0 + offset])
                 console.log('focus on this:', 0 + offset)
                 associatedInput.setAttribute('focusOn', 0 + offset)
             }else{
                 //console.log(nextNode, nextNode.id, nextField)
                 //console.log(associatedInput)
-                if(associatedInput.value){
+                if(value){
                     if(settings.navStyle == 'linear'){
-                        if(announce && associatedInput.value.length >= 1)
-                            announceMessage(associatedInput.value[associatedInput.value.length - 1 + offset])
-                        associatedInput.setAttribute('focusOn', Math.max(0, associatedInput.value.length - 1 + offset))
+                        if(announce && value.length >= 1)
+                            announceMessage(value[value.length - 1 + offset])
+                        associatedInput.setAttribute('focusOn', Math.max(0, value.length - 1 + offset))
                     }else{
-                        associatedInput.setAttribute('focusOn', Math.max(0, associatedInput.value.length + offset))
+                        associatedInput.setAttribute('focusOn', Math.max(0, value.length + offset))
                     }
                 }
             }
@@ -1107,6 +1108,8 @@ function shiftCaret(delta, announce=true, offset=0){
     // otherwise, move down until we get to our next selectable-- 
     // either 'next' or 'prev'
     if(delta < 0){
+        console.log(nextNode)
+
         nextNode = nextNode.data[nextField]
         nextField = 'next'
 
@@ -1245,9 +1248,9 @@ function erase(node){
     rerender(node.parent)
 }
 
-
 async function handleKeyDown(event, input) {
-    const cursorPosition = input.selectionStart;
+    const cursorPosition = getField(input) ? getField(input).getCaretend() : undefined
+    //console.log('cursor pos', cursorPosition)
 
     //console.log('this is the event:', event)
     //console.log('is repeating:', event.repeat)
@@ -1278,13 +1281,13 @@ async function handleKeyDown(event, input) {
 
     if(event.altKey && event.key == 'Insert'){
         //narrate this element
-        announceMessage(input.getAttribute('description') + ' ' + input.value)
+        announceMessage(input.getAttribute('description') + ' ' + getField(input).getValue())
     }
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){
         //narrate this element
         //console.log(input)
-        announceMessage(input.value)
+        announceMessage(getField(input).getValue())
     }
 
     /**
@@ -1310,7 +1313,8 @@ async function handleKeyDown(event, input) {
         //event.preventDefault();
         //console.log('arrow left', input.tagName, cursorPosition)
 
-        if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition <= 0){
+        //console.log('arrowleft', cursorPosition)
+        if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition <= 0){
             let delta = shiftCaret(-1)
 
             event.preventDefault()
@@ -1322,10 +1326,10 @@ async function handleKeyDown(event, input) {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
         if(settings.navStyle == 'linear'){
-            if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length - 1){
+            if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length - 1){
                 // extra shift if we're at the very end of an input field
                 // aka already right before the operator
-                if(input.value && cursorPosition >= input.value.length){
+                if(getField(input) && cursorPosition >= getField(input).length){
                     shiftCaret(2)
                 }else{
                     shiftCaret(1)
@@ -1333,7 +1337,7 @@ async function handleKeyDown(event, input) {
                 event.preventDefault()
             }
         }else{
-            if(input.tagName == 'DIV' || input.tagName == 'SPAN' || cursorPosition >= input.value.length){
+            if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length){
                 shiftCaret(1)
                 event.preventDefault()
             }
@@ -1343,7 +1347,7 @@ async function handleKeyDown(event, input) {
 
     //console.log('getting to test if try to delete')
     //console.log(event.key, input.tagName, input.selectionEnd)
-    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || input.selectionEnd == 0)){
+    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || getField(input).getCaretend() == 0)){
         console.log('try to delete')
         if(isSpatialMode){
             return
@@ -1366,7 +1370,7 @@ async function handleKeyDown(event, input) {
         let idx = node.fields.indexOf(field)
 
         deleteFrom(node, idx)
-    }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || input.selectionStart == input.value.length)){
+    }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || getField(input).getCaret() == getField(input).getValue().length)){
         event.preventDefault()
         event.stopPropagation()
 
