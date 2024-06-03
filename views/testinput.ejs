@@ -38,6 +38,10 @@
             .char {
                 color: green;
             }
+
+            .highlighted {
+                background-color: yellow;
+            }
         </style>
     </head>
     <body>
@@ -65,6 +69,8 @@
             }
 
             function addCarets(textfield, caretDiv, caretendDiv, isCaret, isCaretEnd){
+                let highlight = 0
+
                 if(isCaret && isCaretEnd){
                     caretendDiv.style.marginLeft = "-5px";
                 }else if(isCaret ^ isCaretEnd){
@@ -73,10 +79,14 @@
 
                 if(isCaret){
                     textfield.appendChild(caretDiv)
+                    highlight++
                 }
                 if(isCaretEnd){
                     textfield.appendChild(caretendDiv)
+                    highlight++
                 }
+
+                return highlight
             }
 
             // update UI accordingly
@@ -93,9 +103,16 @@
                 textfield.innerHTML = ""
 
                 let counter = 0
+                let val = 0
                 for(var c of string){
-                    addCarets(textfield, caretDiv, caretendDiv, counter == caret, counter == caretend)
-                    textfield.appendChild(createCharDiv(c))
+                    val += addCarets(textfield, caretDiv, caretendDiv, counter == caret, counter == caretend)
+                    let cdiv = createCharDiv(c)
+
+                    if(val % 2 == 1){
+                        cdiv.setAttribute('class', cdiv.getAttribute('class') + ' highlighted')
+                    }
+
+                    textfield.appendChild(cdiv)
                     counter += 1
                 }
                 addCarets(textfield, caretDiv, caretendDiv, caret == string.length, caretend == string.length)
@@ -154,11 +171,15 @@
                     let updatecaret = false
                     // handle shift modifier
                     if(!event.shiftKey){
-                        if(caret + delta < 0 || caret + delta > string.length){
+                        /*if(caret + delta < 0 || caret + delta > string.length){
                             delta = 0
                         }
                         caret += delta
-                        caretend = caret
+                        caretend = caret*/
+                        if(Math.abs(caret - caretend) > 2){
+                            caretend -= delta
+                        }
+                        caret = caretend
                         updatecaret = true
                     }
 
