@@ -1340,12 +1340,15 @@ async function handleKeyDown(event, input) {
                     shiftCaret(1)
                 }
                 event.preventDefault()
+                event.stopImmediatePropagation()
                 return true
             }
         }else{
+            console.log('sdlfkjdslkfj')
             if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length){
                 shiftCaret(1)
                 event.preventDefault()
+                event.stopImmediatePropagation()
                 return true
             }
         }
