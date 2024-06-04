@@ -10,7 +10,7 @@ const NodeDirection = {
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'linear',
+    navStyle: 'equation',
     playOn: 'anywhere'
 }
 
