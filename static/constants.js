@@ -10,12 +10,14 @@ const NodeDirection = {
 
 let settings = {
     verbosity: 'high',
-    navStyle: 'linear'
+    navStyle: 'linear',
+    playOn: 'anywhere'
 }
 
 let possibleSettings = {
     verbosity: ['low', 'high'],
-    navStyle: ['linear', 'equation']
+    navStyle: ['linear', 'equation'],
+    playOn: ['anywhere', 'field']
 }
 
 function opensettings(){

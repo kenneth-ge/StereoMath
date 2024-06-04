@@ -91,7 +91,8 @@ function handleSpatial(event){
 
     focusElem(topInputs[best])
 
-    {
+    console.log('bestDist', bestDist)
+    if(settings.playOn == 'anywhere' || bestDist < 0.1){
         // play piano sound
 
         // get total number of input fields
