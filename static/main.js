@@ -1321,10 +1321,12 @@ async function handleKeyDown(event, input) {
 
             event.preventDefault()
             event.stopImmediatePropagation()
+
+            return true
         }
 
         event.stopPropagation();
-        return true
+        return false
     } else if (event.key === 'ArrowRight' && !event.shiftKey) {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
@@ -1338,15 +1340,17 @@ async function handleKeyDown(event, input) {
                     shiftCaret(1)
                 }
                 event.preventDefault()
+                return true
             }
         }else{
             if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length){
                 shiftCaret(1)
                 event.preventDefault()
+                return true
             }
         }
         event.stopPropagation();
-        return true
+        return false
     }
 
     //console.log('getting to test if try to delete')
