@@ -1,30 +1,31 @@
-let selectedNode = undefined
-let selectDelta = 0
-let selectHistory = []
-let lastDelta = 0
+let multiselect = {
+    selectedNode: undefined,
+    selectDelta: 0,
+    selectHistory: [],
+    lastDelta: 0}
 
 function triggerSelectOver(field, delta){
     //console.log(delta, field)
     //console.log(getById[field.getAttribute("myId")])
-    selectedNode = getById[field.getAttribute("myId")]
-    selectHistory.push(selectedNode)
-    selectDelta = delta
-    lastDelta = delta
+    multiselect.selectedNode = getById[field.getAttribute("myId")]
+    multiselect.selectHistory.push(multiselect.selectedNode)
+    multiselect.selectDelta = delta
+    multiselect.lastDelta = delta
     showSelect()
 }
 
 /** Returns true if we should short circuit the input field input */
 function handleSelect(event, field){
-    if(!selectedNode)
+    if(!multiselect.selectedNode)
         return false
 
     if(!event.shiftKey){
-        if(selectedNode){
+        if(multiselect.selectedNode){
             unshowSelect()
         }
-        selectedNode = undefined
-        selectHistory = []
-        selectDelta = 0
+        multiselect.selectedNode = undefined
+        multiselect.selectHistory = []
+        multiselect.selectDelta = 0
         return false
     }
 
@@ -38,24 +39,24 @@ function handleSelect(event, field){
             deltadelta = 1
         }
 
-        if(Math.sign(selectDelta) == Math.sign(deltadelta)){
+        if(Math.sign(multiselect.selectDelta) == Math.sign(deltadelta)){
             // preserve expression as top level root
-            if(selectedNode.parent && selectedNode.parent != expression){
-                selectedNode = selectedNode.parent
-                selectHistory.push(selectedNode)
+            if(multiselect.selectedNode.parent && multiselect.selectedNode.parent != expression){
+                multiselect.selectedNode = multiselect.selectedNode.parent
+                multiselect.selectHistory.push(multiselect.selectedNode)
             }
         }else{
             //console.log('unhighlight', selectedNode, selectHistory)
-            unhighlight(selectedNode)
+            unhighlight(multiselect.selectedNode)
             // extra pop
-            if(lastDelta != deltadelta){
-                selectHistory.pop()
+            if(multiselect.lastDelta != deltadelta){
+                multiselect.selectHistory.pop()
             }
-            selectedNode = selectHistory.pop()
+            multiselect.selectedNode = multiselect.selectHistory.pop()
             //console.log('new selected node', selectedNode, selectHistory)
         }
 
-        lastDelta = deltadelta
+        multiselect.lastDelta = deltadelta
     }
 
     //console.log(selectedNode)
@@ -88,9 +89,9 @@ function highlightGreen(node, onoff=true) {
 }
 
 function unshowSelect(){
-    highlightGreen(selectedNode, false)
+    highlightGreen(multiselect.selectedNode, false)
 }
 
 function showSelect(){
-    highlightGreen(selectedNode, true)
+    highlightGreen(multiselect.selectedNode, true)
 }

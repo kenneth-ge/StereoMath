@@ -1358,21 +1358,18 @@ async function handleKeyDown(event, input) {
 
         let node = getById[myId]
 
-        if(selectedNode){
-            erase(selectedNode)
-            await focusOnFind(selectedNode.id)
-            selectedNode = undefined
-            selectHistory = []
-            selectDelta = 0
+        if(multiselect.selectedNode){
+            erase(multiselect.selectedNode)
+            await focusOnFind(multiselect.selectedNode.id)
+            multiselect.selectedNode = undefined
+            multiselect.selectHistory = []
+            multiselect.selectDelta = 0
             return
         }
 
-        if(field=="next"){
+        if(field=="next" || field == 'prev'){
             erase(node)
-            await focusOnFind(selectedNode.id)
-            selectedNode = undefined
-            selectHistory = []
-            selectDelta = 0
+            await focusOnFind(node.id)
             return
         }
 
@@ -1390,14 +1387,20 @@ async function handleKeyDown(event, input) {
 
         let node = getById[myId]
 
-        if(selectedNode){
-            erase(selectedNode)
+        if(multiselect.selectedNode){
+            erase(multiselect.selectedNode)
+            await focusOnFind(multiselect.selectedNode.id)
+            multiselect.selectedNode = undefined
+            multiselect.selectHistory = []
+            multiselect.selectDelta = 0
             return
         }
 
-        if(field=="next"){
+        if(field=="prev" || field == 'next'){
             shiftCaret(1)
-            erase(getById[selected.getAttribute('myid')])
+            erase(node)
+            focusOnFind(node.id)
+            //erase(getById[selected.getAttribute('myid')])
             return
         }
 
