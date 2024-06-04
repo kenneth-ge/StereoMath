@@ -340,7 +340,7 @@ function renderInput(text, field, name, objID, idx=undefined){
     inputFields[inputFieldCtr] = newInputField
     inputFieldCtr++
 
-    waitForElmCriteria(`${objID}.${field}`, e => e.getAttribute('fieldnum')).then(e => {console.log('stuff', e, getField(e)); getField(e).setCaret(0, 0)})
+    waitForElmCriteria(`${objID}.${field}`, e => e.getAttribute('fieldnum')).then(e => {getField(e).setCaret(0, 0)})
     
     return newInputField.html(inputFieldCtr - 1, text, field, name, objID, idx)
 }
