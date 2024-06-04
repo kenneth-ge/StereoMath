@@ -333,6 +333,7 @@ async function loadFile(){
         const file = fileInput.files[0]
         if(file){
             load(await readFile(file))
+            document.getElementById('loadExpr').focus()
         }
     })
 }

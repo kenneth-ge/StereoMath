@@ -319,10 +319,10 @@ function createInput(){
             announceMessage(deleted)
         }
 
-        console.log('value changed')
+        //console.log('value changed')
         valueChanged(string)
         if(!event.ctrlKey && !(event.key=='Tab')){
-            console.log('prevent default')
+            //console.log('prevent default')
             event.preventDefault()
         }
     }
