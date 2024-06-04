@@ -436,6 +436,10 @@ function amSelecting(input){
         updateAriaLabel(selected)
     }
 
+    if(input.getAttribute('type') == 'input' && input.id == 'top.inside'){
+        announceMessage('Start typing here')
+    }
+
     //input.style.background = "black"
     //console.log('selected: ')
     //console.log(input)
