@@ -73,4 +73,7 @@ function playCloseParen(pos=0.5){
 function playEndClick(pos=0.5){
     //console.log('pos', pos)
     endClickObj.playSpatial(1 - pos, pos)
+    endClick.load()
+    endClick.currentTime = 0
+    endClick.play()
 }

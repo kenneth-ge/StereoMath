@@ -1020,9 +1020,9 @@ function shiftCaret(delta, announce=true, offset=0){
             // this is outdated, from going right on the leftmost "highlight all"
             // node
             if(selected.id == 'top.inside'){
-                document.getElementById('top.inside.prev').focus()
-                beforeTone()
-                return 1
+                /*document.getElementById('top.inside.prev').focus()
+                beforeTone()*/
+                return 0
             }
 
             nextField = `separator${nextFieldIdx}`
