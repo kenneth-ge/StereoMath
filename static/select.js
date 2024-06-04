@@ -319,9 +319,12 @@ function createInput(){
             announceMessage(deleted)
         }
 
+        console.log('value changed')
         valueChanged(string)
-        if(!event.ctrlKey && !event.key=='Tab')
+        if(!event.ctrlKey && !(event.key=='Tab')){
+            console.log('prevent default')
             event.preventDefault()
+        }
     }
 
     function changeDisplay(type){
@@ -402,5 +405,11 @@ function createInput(){
 }
 
 function getField(input){
-    return inputFields[input.getAttribute('fieldNum')]
+    let ret = inputFields[input.getAttribute('fieldNum')]
+
+    /*if(!ret){
+        console.log('this is undefined', input)
+    }*/
+
+    return ret
 }

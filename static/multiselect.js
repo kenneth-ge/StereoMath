@@ -29,7 +29,7 @@ function handleSelect(event, field){
     }
 
     // we're selecting and stuff
-    console.log('we are selecting', selectedNode)
+    //console.log('we are selecting', selectedNode)
     if(event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
         let deltadelta = 0
         if(event.key == 'ArrowLeft'){
@@ -39,7 +39,8 @@ function handleSelect(event, field){
         }
 
         if(Math.sign(selectDelta) == Math.sign(deltadelta)){
-            if(selectedNode.parent){
+            // preserve expression as top level root
+            if(selectedNode.parent && selectedNode.parent != expression){
                 selectedNode = selectedNode.parent
                 selectHistory.push(selectedNode)
             }
@@ -57,7 +58,7 @@ function handleSelect(event, field){
         lastDelta = deltadelta
     }
 
-    console.log(selectedNode)
+    //console.log(selectedNode)
 
     showSelect()
 

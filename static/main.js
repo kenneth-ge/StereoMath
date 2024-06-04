@@ -437,7 +437,7 @@ function amSelecting(input){
     }
 
     if(input.getAttribute('type') == 'input' && input.id == 'top.inside'){
-        announceMessage('Start typing here')
+        if(settings.verbosity == 'high') announceMessage('Start typing here')
     }
 
     //input.style.background = "black"
@@ -1344,7 +1344,7 @@ async function handleKeyDown(event, input) {
 
     //console.log('getting to test if try to delete')
     //console.log(event.key, input.tagName, input.selectionEnd)
-    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || getField(input).getCaretend() == 0)){
+    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || !getField(input) || getField(input).getCaretend() == 0)){
         if(spatialNav != "OFF"){
             return
         }
@@ -1361,12 +1361,18 @@ async function handleKeyDown(event, input) {
         if(selectedNode){
             erase(selectedNode)
             await focusOnFind(selectedNode.id)
+            selectedNode = undefined
+            selectHistory = []
+            selectDelta = 0
             return
         }
 
         if(field=="next"){
             erase(node)
             await focusOnFind(selectedNode.id)
+            selectedNode = undefined
+            selectHistory = []
+            selectDelta = 0
             return
         }
 
