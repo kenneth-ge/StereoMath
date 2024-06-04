@@ -2,7 +2,6 @@ let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
 
 // true/false for row/col
-let spatialNavMode = true
 function handleSpatial(event){
     event.preventDefault()
     event.stopPropagation()
@@ -15,7 +14,7 @@ function handleSpatial(event){
 
     let p = loc
 
-    const topInputs = document.querySelectorAll('input[id^="top"]')
+    const topInputs = document.querySelectorAll('div[type="input"]')//document.querySelectorAll('input[id^="top"]')
     
     let boundaryid = 'top'
     if(document.getElementById('top.inside')){
@@ -55,7 +54,7 @@ function handleSpatial(event){
 
     // filter out only rects in this current row/col
     // true corresponds to row, false to col
-    if(spatialNavMode){
+    if(spatialNav == 'ROW'){
         let closestYDist = rects.reduce((acc, c) => {
             return Math.min(acc, pt2SegDist(p.y, c.min.y, c.max.y))
         }, 99999)
@@ -90,7 +89,6 @@ function handleSpatial(event){
         count += 1
     }
 
-    // isSpatialMode = false
     focusElem(topInputs[best])
 
     {
@@ -128,7 +126,7 @@ function handleSpatial(event){
     }
 }
 
-let isSpatialMode = false
+let spatialNav = "OFF"
 let isLiteralMode = false
 let wasFocused = undefined
 
@@ -211,7 +209,7 @@ document.addEventListener("keydown", function(event) {
             });*/
         }
     }
-    if(event.code == "Backquote"){
+    if(event.code == "Escape"){
         // leave select
         autocomplete.classList.add("hidden")
         if(wasFocused) wasFocused.focus()
@@ -219,25 +217,24 @@ document.addEventListener("keydown", function(event) {
         // enter spatial navigation mode
         if(event.shiftKey){
             // if not in spatial, start in spatial
-            if(!isSpatialMode){
-                isSpatialMode = !isSpatialMode
-                spatialNavMode = true
+            if(spatialNav == 'OFF'){
+                spatialNav = 'ROW'
                 announceMessage("Spatial navigation activated: row mode")
             }else{
                 // if already in spatial, then cycle row -> col -> off
-                if(!spatialNavMode){
-                    isSpatialMode = false
+                if(spatialNav == 'ROW'){
+                    spatialNav = 'COL'
                     announceMessage("Spatial navigation off")
                     event.preventDefault()
                 }else{
                     announceMessage("Spatial navigation activated: column mode")
-                    spatialNavMode = false
+                    spatialNav = 'OFF'
                 }
             }
         }
     }
 
-    if(isSpatialMode){
+    if(spatialNav != 'OFF'){
         handleSpatial(event)
     }
   });
@@ -1344,7 +1341,7 @@ async function handleKeyDown(event, input) {
     //console.log(event.key, input.tagName, input.selectionEnd)
     if(event.key == 'Backspace' && (input.tagName == 'SPAN' || getField(input).getCaretend() == 0)){
         console.log('try to delete')
-        if(isSpatialMode){
+        if(spatialNav != "OFF"){
             return
         }
         event.preventDefault()
