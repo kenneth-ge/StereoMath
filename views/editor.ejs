@@ -101,6 +101,11 @@
         <button id="loadExpr" onclick="loadFile()">Load Expr</button>
 
         <input type="file" id="fileInput" style="display:none;">
+        
+        <div style="display: hidden;" id="hiddenreadalouds"></div> <!-- style="display: hidden;" -->
+
+        <div aria-live="assertive" role="status" id="screenReaderAlert"></div>
+        <div role="presentation" aria-hidden="true" id="announcementLog"></div>
 
         <script type="text/javascript" src="util.js"></script>
         <script type="text/javascript" src="constants.js"></script>
@@ -111,7 +116,6 @@
         <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="multiselect.js"></script>
         
-        <div style="display: hidden;" id="hiddenreadalouds"></div> <!-- style="display: hidden;" -->
         <script>
             var MQ = MathQuill.getInterface(2);
             var answerSpan = document.getElementById('latex');
@@ -198,7 +202,5 @@
     }
     </script>
     <script src="sre.js"></script>
-    <div aria-live="assertive" role="status" id="screenReaderAlert"></div>
-    <div role="presentation" aria-hidden="true" id="announcementLog"></div>
     </body>
 </html>

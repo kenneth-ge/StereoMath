@@ -1290,6 +1290,13 @@ async function handleKeyDown(event, input) {
         return true
     }
 
+    //if(event.ctrlKey)
+    //console.log(event.key)
+    if(event.ctrlKey && (event.key == 'a' || event.key == 'A')){
+        selectAll()
+        return true
+    }
+
     /**
      * Up and down-- move from one node to the next
      */
@@ -1358,7 +1365,7 @@ async function handleKeyDown(event, input) {
 
     //console.log('getting to test if try to delete')
     //console.log(event.key, input.tagName, input.selectionEnd)
-    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || !getField(input) || getField(input).getCaretend() == 0)){
+    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || (getField(input) && getField(input).getCaretend() == 0))){
         if(spatialNav != "OFF"){
             return
         }
@@ -1461,3 +1468,5 @@ function getlatex(){
 function readPos(){
 
 }
+
+waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {e.focus()})

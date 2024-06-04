@@ -2,7 +2,8 @@ let multiselect = {
     selectedNode: undefined,
     selectDelta: 0,
     selectHistory: [],
-    lastDelta: 0}
+    lastDelta: 0
+}
 
 function triggerSelectOver(field, delta){
     //console.log(delta, field)
@@ -14,10 +15,18 @@ function triggerSelectOver(field, delta){
     showSelect()
 }
 
+function selectAll(){
+    multiselect.selectedNode = expression.data['inside']
+    multiselect.selectHistory.push(expression)
+    showSelect()
+}
+
 /** Returns true if we should short circuit the input field input */
 function handleSelect(event, field){
-    if(!multiselect.selectedNode)
+    if(!multiselect.selectedNode){
+        //unshowSelect(expression)
         return false
+    }
 
     if(!event.shiftKey){
         if(multiselect.selectedNode){
