@@ -180,6 +180,8 @@ function createInput(){
     function handleKey(event, field){
         //console.log('stuff', event, field)
         handleKeyDown(event, field)
+        if(handleSelect(event, field))
+            return
 
         if(!handleKeys || spatialNav != 'OFF')
             return
@@ -198,6 +200,8 @@ function createInput(){
 
             // no shift if we would go over
             if(caretend + delta < 0 || caretend + delta > string.length){
+                if(event.shiftKey)
+                    triggerSelectOver(field, delta)
                 delta = 0
             }
 

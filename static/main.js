@@ -1305,7 +1305,7 @@ async function handleKeyDown(event, input) {
         event.preventDefault()
     }
 
-    if (event.key === 'ArrowLeft') {
+    if (event.key === 'ArrowLeft' && !event.shiftKey) {
         // Cursor is at the beginning of the input, prevent moving left
         //event.preventDefault();
         //console.log('arrow left', input.tagName, cursorPosition)
@@ -1319,7 +1319,7 @@ async function handleKeyDown(event, input) {
         }
 
         event.stopPropagation();
-    } else if (event.key === 'ArrowRight') {
+    } else if (event.key === 'ArrowRight' && !event.shiftKey) {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
         if(settings.navStyle == 'linear'){
@@ -1345,7 +1345,6 @@ async function handleKeyDown(event, input) {
     //console.log('getting to test if try to delete')
     //console.log(event.key, input.tagName, input.selectionEnd)
     if(event.key == 'Backspace' && (input.tagName == 'SPAN' || getField(input).getCaretend() == 0)){
-        console.log('try to delete')
         if(spatialNav != "OFF"){
             return
         }
@@ -1359,8 +1358,15 @@ async function handleKeyDown(event, input) {
 
         let node = getById[myId]
 
+        if(selectedNode){
+            erase(selectedNode)
+            await focusOnFind(selectedNode.id)
+            return
+        }
+
         if(field=="next"){
             erase(node)
+            await focusOnFind(selectedNode.id)
             return
         }
 
@@ -1377,6 +1383,11 @@ async function handleKeyDown(event, input) {
         let field = input.getAttribute("field")
 
         let node = getById[myId]
+
+        if(selectedNode){
+            erase(selectedNode)
+            return
+        }
 
         if(field=="next"){
             shiftCaret(1)
