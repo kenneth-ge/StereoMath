@@ -178,7 +178,7 @@ function createInput(){
     }
 
     async function handleKey(event, field){
-        console.log('stuff', event, field, handleKeys)
+        //console.log('stuff', event, field, handleKeys)
         if(await handleKeyDown(event, field)){
             return
         }
@@ -345,7 +345,7 @@ function createInput(){
     }
 
     function select(div){
-        console.log('select, focusing')
+        //console.log('select, focusing')
         switchTone()
 
         amSelecting(div)
@@ -356,7 +356,7 @@ function createInput(){
     }
 
     function blur(){
-        console.log('blurring')
+        //console.log('blurring')
         handleKeys = false
 
         changeDisplay('none')

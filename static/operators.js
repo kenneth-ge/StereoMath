@@ -318,7 +318,14 @@ function load(txt){
 
     let final = create(obj, expression, 'inside')
 
+    while(final.name == 'expression'){
+        console.log(final)
+        final = final.data['inside']
+    }
+
     expression.data['inside'] = final
+
+    updateID(expression, '')
 
     rerender(expression)
 
@@ -334,6 +341,7 @@ async function loadFile(){
         if(file){
             load(await readFile(file))
             document.getElementById('loadExpr').focus()
+            renderLaTeX(expression)
         }
     })
 }
