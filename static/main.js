@@ -1,16 +1,6 @@
 let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
 
-let settings = {
-    verbosity: 'high',
-    navStyle: 'linear'
-}
-
-let possibleSettings = {
-    verbosity: ['low', 'high'],
-    navStyle: ['linear', 'equation']
-}
-
 // true/false for row/col
 let spatialNavMode = true
 function handleSpatial(event){

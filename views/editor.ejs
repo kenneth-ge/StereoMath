@@ -70,7 +70,26 @@
             </div>
         </div>
         
+        <div id="settings">
+            <div class="popup">
+                <h2>Settings Menu</h2>
+                    <label for="verbosity">Verbosity:</label>
+                    <select id="verbosity" name="verbosity">
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                    </select><br><br>
 
+                    <label for="navStyle">Navigation Style:</label>
+                    <select id="navStyle" name="navStyle">
+                        <option value="linear">Linear</option>
+                        <option value="equation">Equation</option>
+                    </select><br><br>
+
+                    <!--<button type="submit">Save</button> --><button onclick="closesettings()">Close Menu</button>
+            </div>
+        </div>
+
+        <button id="settingsbtn" type="button" onclick="opensettings()">Settings</button>
         <button id="getlatex" type="button" onclick="getlatex()">Get Latex</button>
         <button onclick="save(expression)">Save Expr</button>
         <button onclick="loadFile()">Load Expr</button>

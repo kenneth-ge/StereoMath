@@ -311,7 +311,8 @@ function createInput(){
         }
 
         valueChanged(string)
-        event.preventDefault()
+        if(!event.ctrlKey && !event.key=='Tab')
+            event.preventDefault()
     }
 
     function changeDisplay(type){
