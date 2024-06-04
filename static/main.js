@@ -559,17 +559,17 @@ async function handleAutomaticInsertion(elem, lastToken){
         //console.log(input)
 
         // add element
-        let newElem = await autocompleteChanged(lastToken)
+        let newElem = await autocompleteChanged(lastToken, true)
 
         // focus on new element
         // we shift the caret right, because typing is always left to right (on English keyboards)
         //console.log('shift caret twice')
-        if(elem.getAttribute('type') == 'input'){
+        /*if(elem.getAttribute('type') == 'input'){
             await shiftCaret(2)
         }else{
             // assert: elem.tagName == 'SPAN'
             //await shiftCaret(0)
-        }
+        }*/
         
         announceMessage(newElem.name)
 
@@ -674,7 +674,7 @@ async function reroot(node, parent, value, after){
     return newItem
 }
 
-async function autocompleteChanged(value) {
+async function autocompleteChanged(value, focus2=false) {
     //console.log('trigger:', value)
 
     if(!selected){
@@ -752,7 +752,10 @@ async function autocompleteChanged(value) {
 
     //console.log("Expressoin after rerender:", expression.data['inside'])
 
-    await focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
+    if(!focus2)
+        await focusOnFind(newItem.id + "." + newItem.focus, selected.selectionStart)
+    else
+        await focusOnFind(newItem.id + "." + newItem.focus2, selected.selectionStart)
 
     //console.log("expression after focus:", expression.data['inside'])
 
