@@ -340,7 +340,7 @@ function renderInput(text, field, name, objID, idx=undefined){
     inputFields[inputFieldCtr] = newInputField
     inputFieldCtr++
 
-    waitForElm(`${objID}.${field}`).then(e => getField(e).setCaret(0, 0))
+    waitForElmCriteria(`${objID}.${field}`, e => e.getAttribute('fieldnum')).then(e => {console.log('stuff', e, getField(e)); getField(e).setCaret(0, 0)})
     
     return newInputField.html(inputFieldCtr - 1, text, field, name, objID, idx)
 }
@@ -1269,6 +1269,7 @@ async function handleKeyDown(event, input) {
         if(succ){
             event.stopImmediatePropagation()
             event.preventDefault()
+            return true
         }
 
         //console.log('inserting elem')
@@ -1279,12 +1280,14 @@ async function handleKeyDown(event, input) {
     if(event.altKey && event.key == 'Insert'){
         //narrate this element
         announceMessage(input.getAttribute('description') + ' ' + getField(input).getValue())
+        return true
     }
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){
         //narrate this element
         //console.log(input)
         announceMessage(getField(input).getValue())
+        return true
     }
 
     /**
@@ -1299,10 +1302,12 @@ async function handleKeyDown(event, input) {
 
         event.stopPropagation();
         event.preventDefault()
+        return true
     }else if(event.key == 'ArrowDown'){
         shiftCaret(1)
         event.stopPropagation();
         event.preventDefault()
+        return true
     }
 
     if (event.key === 'ArrowLeft' && !event.shiftKey) {
@@ -1319,6 +1324,7 @@ async function handleKeyDown(event, input) {
         }
 
         event.stopPropagation();
+        return true
     } else if (event.key === 'ArrowRight' && !event.shiftKey) {
         // Cursor is at the end of the input, prevent moving right
         //event.preventDefault();
@@ -1340,6 +1346,7 @@ async function handleKeyDown(event, input) {
             }
         }
         event.stopPropagation();
+        return true
     }
 
     //console.log('getting to test if try to delete')
@@ -1359,23 +1366,32 @@ async function handleKeyDown(event, input) {
         let node = getById[myId]
 
         if(multiselect.selectedNode){
+            console.log('erase node')
             erase(multiselect.selectedNode)
             await focusOnFind(multiselect.selectedNode.id)
             multiselect.selectedNode = undefined
             multiselect.selectHistory = []
             multiselect.selectDelta = 0
-            return
+
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            return true
         }
 
         if(field=="next" || field == 'prev'){
             erase(node)
             await focusOnFind(node.id)
-            return
+
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            return true
         }
 
         let idx = node.fields.indexOf(field)
 
         deleteFrom(node, idx)
+
+        return true
     }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || getField(input).getCaret() == getField(input).getValue().length)){
         event.preventDefault()
         event.stopPropagation()
@@ -1393,7 +1409,11 @@ async function handleKeyDown(event, input) {
             multiselect.selectedNode = undefined
             multiselect.selectHistory = []
             multiselect.selectDelta = 0
-            return
+
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            
+            return true
         }
 
         if(field=="prev" || field == 'next'){
@@ -1401,13 +1421,21 @@ async function handleKeyDown(event, input) {
             erase(node)
             focusOnFind(node.id)
             //erase(getById[selected.getAttribute('myid')])
-            return
+
+            event.stopImmediatePropagation()
+            event.preventDefault()
+
+            return true
         }
 
         let idx = node.fields.indexOf(field) + 1
 
         deleteFrom(node, idx)
+
+        return true
     }
+
+    return false
 }
 
 function getlatex(){

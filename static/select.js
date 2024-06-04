@@ -177,9 +177,11 @@ function createInput(){
         }
     }
 
-    function handleKey(event, field){
+    async function handleKey(event, field){
         //console.log('stuff', event, field)
-        handleKeyDown(event, field)
+        if(await handleKeyDown(event, field)){
+            return
+        }
         if(handleSelect(event, field))
             return
 
