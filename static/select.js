@@ -75,11 +75,16 @@ function createInput(){
         try {
             textfield.removeChild(caretDiv)
         } catch (error) {
+            caretDiv = document.createElement('span')
+            caretDiv.setAttribute('class', 'caret')
+            caretDiv.setAttribute('id', `caret${fieldId}`)
         }
         try {
             textfield.removeChild(caretendDiv)
         } catch (error) {
-            
+            caretendDiv = document.createElement('span')
+            caretendDiv.setAttribute('class', 'caret caretend')
+            caretendDiv.setAttribute('id', `caretend${fieldId}`)
         }
 
         textfield.innerHTML = ""
