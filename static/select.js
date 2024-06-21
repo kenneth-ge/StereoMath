@@ -1,5 +1,5 @@
 let charList = 
-[' ', '~', ' ', ' ', 'j', ' ', 'z', 'x', ' ', 'v', 'q', 'u', 'l', 'n', 'm', 'p', 'g', 'f', 'y', 'w', 't', 's', 'r', 'o', 'k', 'i', 'h', 'e', 'c', 'd', 'b', 'a', ' ', '_', ' ', ' ', '\\', 'Z', ' ', 'Y', 'W', 'P', 'U', 'V', 'T', 'Q', 'R', 'X', 'K', 'S', 'N', 'O', 'G', 'L', 'M', 'I', 'J', 'H', 'F', 'E', 'C', 'D', 'B', '?', ';', '@', '=', '>', 'A', '6', '9', ':', '8', '7', '5', '3', '4', '2', '1', '0', '/', '-', '.', '+', ' ', ' ', ' ', ' ', '&', '%', ' ', '$', '#', ' ', '!', ' ', ' ', '^', '*', '(', ')', '[', ']', '{', '}', '|', '<', ',', '"', "'"]
+[' ', '~', ' ', ' ', 'j', ' ', 'z', 'x', ' ', 'v', 'q', 'u', 'l', 'n', 'm', 'p', 'g', 'f', 'y', 'w', 't', 's', 'r', 'o', 'k', 'i', 'h', 'e', 'c', 'd', 'b', 'a', ' ', '_', ' ', ' ', '\\', 'Z', ' ', 'Y', 'W', 'P', 'U', 'V', 'T', 'Q', 'R', 'X', 'K', 'S', 'N', 'O', 'G', 'L', 'M', 'I', 'J', 'H', 'F', 'E', 'C', 'D', 'B', '?', ';', '@', '=', '>', 'A', '6', '9', ':', '8', '7', '5', '3', '4', '2', '1', '0', '/', '-', '.', '+', ' ', ' ', ' ', ' ', '&', '%', ' ', '$', '#', ' ', '!', ' ', ' ', '^', '*', '(', ')', '[', ']', '{', '}', '|', '<', ',', '"', "'", "-"]
 /*
 [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', 
 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 
@@ -13,10 +13,10 @@ for(var i = 0; i < charList.length; i++){
     var sound      = document.createElement('audio');
     sound.id       = 'audio-player';
     sound.controls = 'controls';
-    sound.src      = 'charreads/' +i + '..mp3';
+    sound.src      = 'charreads/' + i + '..mp3';
     sound.type     = 'audio/mpeg';
 
-    charAudioMap[charList[i]] = createSpatialObject(sound)
+    charAudioMap[charList[i]] = createSpatialObject(sound, charList[i])
 }
 
 function createInput(){
@@ -373,7 +373,8 @@ function createInput(){
         id = `${objID}.${field}`
         fieldId = fieldNum
 
-        return `<div type="input" value="" aria-label="${field} of ${name}" role="application" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" class="placeholder inputfield" id="${objID}.${field}" myId="${objID}" field="${field}" fieldNum="${fieldNum}" onblur="inputFields[${fieldNum}].blur()" onfocus="inputFields[${fieldNum}].select(this)" idx=${idx} onkeydown="inputFields[${fieldNum}].handleKey(event, this)" tabindex="0">
+        // aria-label="${field} of ${name}" role="application" 
+        return `<div type="input" value="" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" class="placeholder inputfield" id="${objID}.${field}" myId="${objID}" field="${field}" fieldNum="${fieldNum}" onblur="inputFields[${fieldNum}].blur()" onfocus="inputFields[${fieldNum}].select(this)" idx=${idx} onkeydown="inputFields[${fieldNum}].handleKey(event, this)" tabindex="0">
         <span class="caret" id="caret${fieldNum}"></span>
         <span class="caret caretend" id="caretend${fieldNum}"></span>
     </div>`

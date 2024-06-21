@@ -116,78 +116,8 @@
         <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="multiselect.js"></script>
         
-        <script>
-            var MQ = MathQuill.getInterface(2);
-            var answerSpan = document.getElementById('latex');
-            var answerMathField = MQ.MathField(answerSpan, {
-                handlers: {
-                    edit: function() {
-                        var enteredMath = answerMathField.latex(); // Get entered math in LaTeX format
-                        document.querySelector("button").addEventListener("click", () => {
-                            document.getElementById("si_suvat_equation").innerHTML = 
-                        String.raw`<span>$$\begin{gather} s = ut + \frac{1}{2}  at^{2}\\ \notag \end{gather}$$</span>`;
-                            MathJax.typeset();
-                        });
-                        console.log(enteredMath)
-                    }
-                }
-            });
-        </script>
         <script src="index.js"></script>
 <script type="text/javascript">
-    var ed = answerMathField
-
-    var items = document.querySelectorAll('.mathquill-embedded-latex');
-    items.forEach(item => {
-        MQ.StaticMath(item);
-    });
-
-    items = document.querySelectorAll('table div');
-    items.forEach(item => {
-        item.classList.add('hidden');
-    });
-
-    $(document).ready(function () {
-        $('td').mouseenter(function () {
-            //ed.redraw();
-        });
-        /*setTimeout(function () {
-            $('.mathquill-rendered-math').mathquill('redraw');
-        }, 1000);*/
-    });
-
-    $('.toolbar').click(function (e) {
-        var latex = $(e.target).closest('p').children('code').text();
-        if (latex){
-            console.log(latex)
-            ed.write(latex).focus();
-        }
-    });
-    $('.toolbar').keydown(function (e) {
-        if (event.keyCode === 32) {
-            event.preventDefault();
-        }
-        // If enter is pressed, activate the button
-        else if (event.keyCode === 13) {
-            event.preventDefault();
-            var latex = $(e.target).closest('p').children('code').text();
-            if (latex){
-                console.log(latex)
-                ed.write(latex).focus();
-            }
-        }
-    });
-    $('.toolbar').keyup(function (e) {
-        if (event.keyCode === 32) {
-            event.preventDefault();
-            var latex = $(e.target).closest('p').children('code').text();
-            if (latex){
-                console.log(latex)
-                ed.write(latex).focus();
-            }
-        }
-    });
-
     waitForElm(expression.id + "." + expression.focus).then((elm) => {
     console.log('finished waiting')
     elm.focus()

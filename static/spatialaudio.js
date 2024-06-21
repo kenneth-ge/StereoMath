@@ -2,7 +2,9 @@ let before = document.getElementById('before')
 let after = document.getElementById('after')
 let endClick = document.getElementById('endClick')
 
-function createSpatialObject(audioElem){
+function createSpatialObject(audioElem, char=undefined){
+    audioElem.load()
+
     const audioContext = new AudioContext()
 
     const elem1 = document.createElement('audio')
@@ -13,6 +15,9 @@ function createSpatialObject(audioElem){
 
     elem2.src = audioElem.src
     elem2.controls = audioElem.controls
+
+    elem1.load()
+    elem2.load()
 
     const source1 = audioContext.createMediaElementSource(elem1)
     const source2 = audioContext.createMediaElementSource(elem2)
@@ -35,7 +40,11 @@ function createSpatialObject(audioElem){
     
     return {
         playSpatial: (left, right) => {
+            //console.log('play sound ', char)
+            audioElem.currentTime = 0
+            audioElem.play()
             //console.log('left', left, 'right', right)
+
             elem1.currentTime = 0
             elem2.currentTime = 0
         
@@ -62,11 +71,13 @@ endClickObj = createSpatialObject(endClick)
 
 function playOpenParen(pos=0.5){
     //console.log('pos', pos)
+    before.load()
     openObj.playSpatial(1 - pos, pos)
 }
 
 function playCloseParen(pos=0.5){
     //console.log('pos', pos)
+    after.load()
     closeObj.playSpatial(1 - pos, pos)
 }
 
