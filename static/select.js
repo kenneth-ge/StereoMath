@@ -234,7 +234,7 @@ function createInput(){
         }
 
         // type char
-        if(!event.ctrlKey)
+        if(!event.ctrlKey && !event.altKey)
         if(event.key.length == 1){
             let start = string.substring(0, Math.min(caret, caretend))
             let end = string.substring(Math.max(caret, caretend), string.length)

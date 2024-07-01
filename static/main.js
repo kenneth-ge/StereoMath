@@ -232,6 +232,8 @@ document.addEventListener("keydown", function(event) {
                     spatialNav = 'OFF'
                 }
             }
+
+            event.preventDefault()
         }
     }
 
