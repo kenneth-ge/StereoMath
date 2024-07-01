@@ -225,10 +225,10 @@ document.addEventListener("keydown", function(event) {
                 // if already in spatial, then cycle row -> col -> off
                 if(spatialNav == 'ROW'){
                     spatialNav = 'COL'
-                    announceMessage("Spatial navigation off")
+                    announceMessage("Spatial navigation activated: column mode")
                     event.preventDefault()
                 }else{
-                    announceMessage("Spatial navigation activated: column mode")
+                    announceMessage("Spatial navigation off")
                     spatialNav = 'OFF'
                 }
             }
