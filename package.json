@@ -18,6 +18,7 @@
   "homepage": "https://github.com/kenneth-ge/NL-Latex-Survey#readme",
   "dependencies": {
     "ejs": "^3.1.9",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "web-audio-api": "^0.2.2"
   }
 }

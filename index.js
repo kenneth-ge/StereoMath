@@ -5,6 +5,8 @@ const ejs = require('ejs');
 const app = express();
 const port = process.env.PORT || 3000;  // use environment variable for port or default to 3000
 
+const {synthesize} = require('./customtts')
+
 // Define the root directory for your static files (e.g., HTML, CSS, JS)
 const staticPath = path.join(__dirname, 'static');
 
@@ -20,6 +22,11 @@ app.set('views', path.join(__dirname, 'views'));
 // Route to handle all other requests (usually serves index.html)
 app.get('/', (req, res) => {
   res.render('editor')  // Replace with your main HTML file if different
+});
+
+app.get('/gettts', async (req, res) => {
+  res.contentType('audio/pcm');
+  res.send(Buffer.from(await synthesize(req.query.text), 'binary'))
 });
 
 app.get('/testinput', (req, res) => {
