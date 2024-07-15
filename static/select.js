@@ -373,8 +373,8 @@ function createInput(){
         id = `${objID}.${field}`
         fieldId = fieldNum
 
-        // aria-label="${field} of ${name}" role="application" 
-        return `<div type="input" value="" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" class="placeholder inputfield" id="${objID}.${field}" myId="${objID}" field="${field}" fieldNum="${fieldNum}" onblur="inputFields[${fieldNum}].blur()" onfocus="inputFields[${fieldNum}].select(this)" idx=${idx} onkeydown="inputFields[${fieldNum}].handleKey(event, this)" tabindex="0">
+        // aria-label="${field} of ${name}" 
+        return `<div role="application" type="input" value="" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" class="placeholder inputfield" id="${objID}.${field}" myId="${objID}" field="${field}" fieldNum="${fieldNum}" onblur="inputFields[${fieldNum}].blur()" onfocus="inputFields[${fieldNum}].select(this)" idx=${idx} onkeydown="inputFields[${fieldNum}].handleKey(event, this)" tabindex="0">
         <span class="caret" id="caret${fieldNum}"></span>
         <span class="caret caretend" id="caretend${fieldNum}"></span>
     </div>`
