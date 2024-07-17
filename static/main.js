@@ -854,16 +854,18 @@ function switchTone(){
 }
 
 function beforeTone(field){
-    playOpenParen(calculateRelativePos(field).avg.x)
+    let pos = calculateRelativePos(field).avg.x
+    playOpenParen(pos)
     if(settings.verbosity == 'high'){
-        announceMessage('L paren')
+        announceMessage('L paren', pos)
     }
 }
 
 function afterTone(field){
-    playCloseParen(calculateRelativePos(field).avg.x)
+    let pos = calculateRelativePos(field).avg.x
+    playCloseParen(pos)
     if(settings.verbosity == 'high'){
-        announceMessage('R paren')
+        announceMessage('R paren', pos)
     }
 }
 
