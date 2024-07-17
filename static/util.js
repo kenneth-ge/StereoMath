@@ -225,16 +225,32 @@ function calculateRelativePos(input){
     }
 }
 
-function announceMessage(message) {
+function normalize(x, y){
+    return {left: x / Math.max(x, y), right: y / Math.max(x, y)}
+}
+
+function announceMessage(message, pos = 0.5) {
     if(!message)
         return
-    //console.log('announcing:', message)
+    
+    if(!pos || typeof pos !== 'number'){
+        pos = 0.5
+    }
 
-    var alertDiv = document.getElementById('screenReaderAlert');
+    // add message to log
     var log = document.getElementById('announcementLog')
-    alertDiv.textContent = message;
+    log.innerHTML = message + '<br>' + log.innerHTML
+    
+    if(settings.useRemoteTTS){
+        let {left, right} = normalize(1 - pos, pos)
+        playAudio(message, left, right)
+    }else{
+        // using built-in screen reader
+        var alertDiv = document.getElementById('screenReaderAlert');
+        alertDiv.textContent = message;
 
-    setTimeout(() => {alertDiv.textContent = ""; log.innerHTML = message + '<br>' + log.innerHTML}, 50)
+        setTimeout(() => {alertDiv.textContent = ""}, 50)
+    }
 }
 
 function putInBuffer(text){

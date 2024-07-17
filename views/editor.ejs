@@ -107,6 +107,9 @@
         <div aria-live="assertive" role="status" id="screenReaderAlert"></div>
         <div role="presentation" aria-hidden="true" id="announcementLog"></div>
 
+        <script src='pcm-player/pcm-player.js'></script>
+        <script src='customtts_client.js'></script>
+
         <script type="text/javascript" src="util.js"></script>
         <script type="text/javascript" src="constants.js"></script>
         <script type="text/javascript" src="spatial_keyboard.js"></script>
@@ -115,16 +118,12 @@
         <script type="text/javascript" src="select.js"></script>
         <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="multiselect.js"></script>
-        
-        <script src='pcm-player/pcm-player.js'></script>
-        <script src='customtts_client.js'></script>
 
         <script src="index.js"></script>
 <script type="text/javascript">
-    waitForElm(expression.id + "." + expression.focus).then((elm) => {
-    console.log('finished waiting')
-    elm.focus()
-})
+    /*waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {
+        console.log('select')
+        inputFields[0].select()})*/
 </script>
 <script type="text/x-sre-config">
     {

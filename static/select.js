@@ -133,14 +133,14 @@ function createInput(){
 
     /** play this char, but in a spatial context */
     function spatialChar(c){
+        let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
+
         if(c.length > 1 || !charAudioMap[c]){
             // fallback if we accidentally put a string in here, rather than a char
-            announceMessage(c)
+            announceMessage(c, spatialPos)
             console.error(c, 'should be one single char or missing audio file')
             return;
         }
-
-        let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
 
         //console.log('playspatial', c, charAudioMap[c], spatialPos)
 
@@ -153,17 +153,19 @@ function createInput(){
             let oldSize = Math.abs((caretend - delta) - caret)
             let newSize = Math.abs(caretend - caret)
 
+            let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
+
             // readaloud
             // if selecting, then announce what has just been (un)selected
             let selectedOrNot = newSize < oldSize ? ' unselected' : ' selected'
             if(delta < 0)
-                announceMessage((string[caretend] == 'a' ? 'A' : string[caretend]) + selectedOrNot)
+                announceMessage((string[caretend] == 'a' ? 'A' : string[caretend]) + selectedOrNot, spatialPos)
             else if(delta > 0)
-                announceMessage((string[caretend - 1] == 'a' ? 'A' : string[caretend - 1]) + selectedOrNot)
+                announceMessage((string[caretend - 1] == 'a' ? 'A' : string[caretend - 1]) + selectedOrNot, spatialPos)
             else{
                 // nothing changed
                 // TODO: custom behavior here?
-                playEndClick(calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x)
+                playEndClick(spatialPos)
             }
         }else{
             // read new char
@@ -318,7 +320,7 @@ function createInput(){
             caretend = caret
             updateUI(true, true)
 
-            announceMessage(deleted)
+            announceMessage(deleted, calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x)
         }
 
         //console.log('value changed')

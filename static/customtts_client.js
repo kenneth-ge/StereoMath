@@ -4,12 +4,22 @@ let player = new PCMPlayer({
     sampleRate: 22050
 });
 
-async function playAudio(text, left=1, right=1){
-    x = await fetch('gettts?' + new URLSearchParams({
-        text
-        }).toString())
+let saved = new Map()
 
-    let data = new Int16Array(await x.arrayBuffer())
+async function playAudio(text, left=1, right=1){
+    let data = undefined
+    if(saved.has(text)){
+        data = saved.get(text)
+    }else{
+        x = await fetch('gettts?' + new URLSearchParams({
+            text
+            }).toString())
+    
+        data = new Int16Array(await x.arrayBuffer())
+        
+        saved.set(text, data)
+    }
+    
     player.volume(left, right)
 
     player.feed(data)

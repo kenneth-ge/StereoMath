@@ -1,5 +1,7 @@
 let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
+let tone = document.getElementById('tone')
+
 
 // true/false for row/col
 function handleSpatial(event){
@@ -108,7 +110,7 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
-        announceMessage(topInputs[best].getAttribute('description') + ' ' + getField(topInputs[best]).getValue())
+        announceMessage(topInputs[best].getAttribute('description') + ' ' + getField(topInputs[best]).getValue(), calculateRelativePos(topInputs[best]).avg.x)
 
         console.log('play sounds:', rects.length, bestCnt)
 
@@ -425,7 +427,7 @@ function amSelecting(input){
 
     // console.log(input.tagName, input)
     if(input.tagName == 'SPAN'){
-        announceMessage(input.getAttribute('custom-label'))
+        announceMessage(input.getAttribute('custom-label'), calculateRelativePos(input).avg.x)
     }
 
     if(focusOn){
@@ -565,7 +567,7 @@ async function handleAutomaticInsertion(elem, lastToken){
             //await shiftCaret(0)
         }*/
         
-        announceMessage(newElem.name)
+        announceMessage(newElem.name, calculateRelativePos(newElem).avg.x)
 
         readPos()
         //console.log('done shifting')
@@ -841,8 +843,6 @@ function nodeToInput(node){
 function floormod(a, b) {
     return ((a % b) + b) % b;
 }
-
-let tone = document.getElementById('tone')
 
 function play(thing){
     thing.currentTime = 0
@@ -1281,14 +1281,14 @@ async function handleKeyDown(event, input) {
 
     if(event.altKey && event.key == 'Insert'){
         //narrate this element
-        announceMessage(input.getAttribute('description') + ' ' + getField(input).getValue())
+        announceMessage(input.getAttribute('description') + ' ' + getField(input).getValue(), calculateRelativePos(input).avg.x)
         return true
     }
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){
         //narrate this element
         //console.log(input)
-        announceMessage(getField(input).getValue())
+        announceMessage(getField(input).getValue(), calculateRelativePos(input).avg.x)
         return true
     }
 
@@ -1471,4 +1471,4 @@ function readPos(){
 
 }
 
-waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {e.focus()})
+waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {inputFields[0].select(e)})

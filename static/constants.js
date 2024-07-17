@@ -11,13 +11,15 @@ const NodeDirection = {
 let settings = {
     verbosity: 'high',
     navStyle: 'equation',
-    playOn: 'anywhere'
+    playOn: 'anywhere',
+    useRemoteTTS: true
 }
 
 let possibleSettings = {
     verbosity: ['low', 'high'],
     navStyle: ['linear', 'equation'],
-    playOn: ['anywhere', 'field']
+    playOn: ['anywhere', 'field'],
+    useRemoteTTS: [true, false]
 }
 
 function opensettings(){
