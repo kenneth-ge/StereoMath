@@ -320,7 +320,11 @@ function createInput(){
             caretend = caret
             updateUI(true, true)
 
-            announceMessage(deleted, calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x)
+            if(deleted.length <= 1){
+                spatialChar(deleted.charAt(0))
+            }else{
+                announceMessage(deleted, calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x)
+            }
         }
 
         //console.log('value changed')
