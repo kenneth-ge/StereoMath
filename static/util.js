@@ -241,7 +241,9 @@ function announceMessage(message, pos = 0.5) {
     var log = document.getElementById('announcementLog')
     log.innerHTML = message + '<br>' + log.innerHTML
     
-    if(settings.useRemoteTTS){
+    console.log('use remote tts:', settings.useRemoteTTS)
+
+    if(settings.useRemoteTTS == 'true'){
         let {left, right} = normalize(1 - pos, pos)
         playAudio(message, left, right)
     }else{

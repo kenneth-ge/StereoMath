@@ -12,14 +12,14 @@ let settings = {
     verbosity: 'high',
     navStyle: 'equation',
     playOn: 'anywhere',
-    useRemoteTTS: true
+    useRemoteTTS: 'true'
 }
 
 let possibleSettings = {
     verbosity: ['low', 'high'],
     navStyle: ['linear', 'equation'],
     playOn: ['anywhere', 'field'],
-    useRemoteTTS: [true, false]
+    useRemoteTTS: ['true', 'false']
 }
 
 function opensettings(){
