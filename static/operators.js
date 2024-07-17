@@ -361,3 +361,59 @@ function readFile(file){
         reader.readAsText(file)
     })
 }
+
+
+/// HANDLE SPECIAL CASE: FOLDED NODES
+let folded = {
+    name: "folded",
+    fields: [],
+    data: {},
+    direction: "row",
+    symbol: (x) => x == 0 ? "(...)" : "",
+    focus: "",
+    focus2: ""
+}
+
+function create_new_folded(original, parent, slot){
+    let ret = JSON.parse(JSON.stringify(folded))
+    ret.id = (parent ? parent.id : '') + "." + slot
+
+    if(slot == "..."){
+        if(parent)
+            parent.data[slot].push(ret)
+        ret.id += "." + (parent.data[slot].length - 1)
+    }else{
+        if(parent){
+            //console.log('this is the slot:', slot)
+            //console.log('this is ret:', ret)
+            parent.data[slot] = ret
+            //console.log('change parent here:', parent)
+            //console.log(expression)
+            //console.log('parent of parent = expression', parent.parent == expression)
+        }
+    }
+
+    ret.symbol = folded.symbol
+    ret.parent = parent
+    ret.slot = slot
+
+    ret.original = original
+
+    ret.readaloud = (x) => "folded " + original.name
+    ret.render = (data) => original.render (original.data)
+
+    for(var x of folded.fields){
+        ret.data[x] = ''
+    }
+
+    getById[ret.id] = ret
+
+    return ret
+}
+
+function unfold(folded){
+    folded.parent.data[folded.slot] = folded.original
+    getById[folded.id] = folded.original
+
+    return folded.original
+}

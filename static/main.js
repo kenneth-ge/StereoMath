@@ -358,6 +358,8 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
     if(!symbol || symbol == ''){
         return ``
     }
+    console.log('make symbol span')
+    console.log(`<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`)
     // role="presentation"
     return `<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
@@ -365,6 +367,16 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
 function renderDiv(obj, myId="", field="", name="", idx=0){
     if (typeof obj === "string") {
         return renderInput(obj, field, name, myId, idx)
+    }
+
+    if(obj.name == 'folded'){
+        console.log('special case for folded nodes: ', obj)
+        //return "SDFLKJSDFLKSJDFLKSJDF"
+        let symbolSpanString = makeSymbolSpan('(...)', obj, 0, obj.readaloud(0))
+        console.log('symbol span string in renderDiv', symbolSpanString)
+        let retString = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" class="block outerblock" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" role="button" onkeydown="handleKeyDown(event, this)"> ${symbolSpanString}</div>`
+        console.log('returning:', retString)
+        return  retString
     }
 
     // 
@@ -567,7 +579,7 @@ async function handleAutomaticInsertion(elem, lastToken){
             //await shiftCaret(0)
         }*/
         
-        announceMessage(newElem.name, calculateRelativePos(newElem).avg.x)
+        //announceMessage(newElem.name, calculateRelativePos(newElem).avg.x)
 
         readPos()
         //console.log('done shifting')
@@ -1249,9 +1261,50 @@ function erase(node){
     rerender(node.parent)
 }
 
+let lastFolded = 0
 async function handleKeyDown(event, input) {
     const cursorPosition = getField(input) ? getField(input).getCaretend() : undefined
     //console.log('cursor pos', cursorPosition)
+
+    if(event.ctrlKey && event.key == '\\'){
+        const currentTimeMillis = new Date().getTime();
+        
+        if(currentTimeMillis - lastFolded < 500)
+            return
+
+        lastFolded = currentTimeMillis
+
+        console.log(event)
+        console.log('fold/unfold', input, getField(input))
+        let myId = input.getAttribute("myid")
+        let node = getById[myId]
+
+        console.log(node)
+
+        console.log(node.id)
+        if(node.id != 'top'){
+            console.log('node name:', node.name)
+            // we should toggle fold
+            if (node.name == 'folded'){
+                // unfold
+                console.log('unfold here')
+                let original = unfold(node)
+                rerender(node.parent)
+                focusOnFind(original.id + '.' + original.focus)
+            }else{
+                console.log('fold here')
+                // fold
+                let foldnode = create_new_folded(node, node.parent, node.slot)
+                rerender(node.parent)
+
+                let elem = await waitForElm(foldnode.id + '.prev')
+                elem.focus()
+            }
+        }
+
+        event.preventDefault()
+        event.stopPropagation()
+    }
 
     //console.log('this is the event:', event)
     //console.log('is repeating:', event.repeat)
@@ -1271,6 +1324,7 @@ async function handleKeyDown(event, input) {
         }
         
         if(succ){
+            console.log('returns true and stops prop')
             event.stopImmediatePropagation()
             event.preventDefault()
             return true
