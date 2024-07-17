@@ -1,0 +1,3 @@
+[submodule "static/pcm-player"]
+	path = static/pcm-player
+	url = https://github.com/kenneth-ge/pcm-player.git

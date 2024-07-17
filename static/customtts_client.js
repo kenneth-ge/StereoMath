@@ -1,13 +1,16 @@
-async function playAudio(text){
+let player = new PCMPlayer({
+    encoding: '16bitInt',
+    channels: 1,
+    sampleRate: 22050
+});
+
+async function playAudio(text, left=1, right=1){
     x = await fetch('gettts?' + new URLSearchParams({
         text
         }).toString())
 
-    var player = new PCMPlayer({
-        encoding: '16bitInt',
-        channels: 1,
-        sampleRate: 22050
-    });
+    let data = new Int16Array(await x.arrayBuffer())
+    player.volume(left, right)
 
-    player.feed(new Int16Array(await x.arrayBuffer()))
+    player.feed(data)
 }
