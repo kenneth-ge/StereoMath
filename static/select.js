@@ -19,6 +19,18 @@ for(var i = 0; i < charList.length; i++){
     charAudioMap[charList[i]] = createSpatialObject(sound, charList[i])
 }
 
+let toSymbol = new Map()
+let toLatex = new Map()
+let toSymbolNoSlash = new Map()
+
+let symbols = [['…', '\\ldots'], ['δ', '\\delta'], ['Δ', '\\Delta'], ['γ', '\\gamma'], ['Γ', '\\Gamma'], ['°', '\\degree'], ['Φ', '\\Phi'], ['φ', '\\phi']]
+
+for (let [symbol, latex] of symbols) {
+    toSymbol.set(latex, symbol)
+    toLatex.set(symbol, latex)
+    toSymbolNoSlash.set(latex.replace('\\', ''), symbol)
+}
+
 function createInput(){
     let caret = 0
     let caretend = 0
@@ -105,6 +117,11 @@ function createInput(){
         addCarets(textfield, caretDiv, caretendDiv, caret == string.length || (caret > string.length), caretend == string.length || (caretend > string.length))
     }
 
+    function getLastToken(){
+        let tokens = tokenizeWithSymbolsAndSpaces(string.substring(0, caretend))
+        return tokens[tokens.length - 1]
+    }
+
     function getTokenShift(left){
         if(left){
             let tokens = tokenizeWithSymbolsAndSpaces(string.substring(0, caretend))
@@ -136,6 +153,9 @@ function createInput(){
         let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
 
         if(c.length > 1 || !charAudioMap[c]){
+            if(c == '…')
+                c = 'ellipses'
+
             // fallback if we accidentally put a string in here, rather than a char
             announceMessage(c, spatialPos)
             console.error(c, 'should be one single char or missing audio file')
@@ -159,6 +179,7 @@ function createInput(){
             let newPos = caretend
             let fullString = string.substring(Math.min(oldPos, newPos), Math.max(oldPos, newPos))
 
+            fullString = fullString.replace('…', ' ellipses ')
             if(fullString.length == 1 && (fullString.charAt(0) == 'a' || fullString.charAt(0) == 'A')){
                 fullString = "ae"
             }
@@ -258,6 +279,16 @@ function createInput(){
             // update caret
             caret = Math.min(caret, caretend) + 1
             caretend = caret
+
+            let lastToken = getLastToken()
+            console.log('get last token', lastToken, toSymbol.has(lastToken))
+            if(toSymbolNoSlash.has(lastToken)){
+                let symbol = toSymbolNoSlash.get(lastToken)
+                string = string.substring(0, caret - lastToken.length) + symbol + string.substring(caret)
+                caret -= lastToken.length - 1
+                caretend = caret
+            }
+
             updateUI(true, true)
 
             spatialChar(event.key)
@@ -381,13 +412,28 @@ function createInput(){
         changeDisplay('none')
     }
 
+    function getLatexString(str){
+        let ret = str
+        for (let [symbol, latex] of symbols) {
+            ret = ret.replace(symbol, latex)
+        }
+        return ret
+    }
+
+    function getNormalString(str){
+        let ret = str
+        for (let [symbol, latex] of symbols) {
+            ret = ret.replace(latex, symbol)
+        }
+        return ret
+    }
+
     function html(fieldNum, text, field, name, objID, idx){
-        //return `<input aria-label="${field} of ${name}" role="application" style="min-width: ${text.length}ch" autocomplete="off" description="${field} of ${name}" tabindex="0" type="text" class="placeholder" id="${objID}.${field}" myId="${objID}" field="${field}" onfocus="amSelecting(this)" oninput="handleValueChanged(this)" value="${text}" idx=${idx} ${keyCallback}="handleKeyDown(event, this)"/>`
-        string = text
+        string = getNormalString(text)
         valueChanged = () => {
             let div = document.getElementById(`${objID}.${field}`)
             div.setAttribute('value', string)
-            handleValueChanged(div, string)
+            handleValueChanged(div, string, getLatexString(string))
         }
         id = `${objID}.${field}`
         fieldId = fieldNum
@@ -419,7 +465,8 @@ function createInput(){
     }
 
     function setText(text){
-        string = text
+        console.log('call set text fn ', text)
+        string = getNormalString(text)
         updateUI(true, true)
     }
 

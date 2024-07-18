@@ -58,7 +58,7 @@ function getLocation(key, code){
 
 function isNavigation(event){
     let navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
-    return navKeys.includes(event.key)
+    return navKeys.includes(event.key) || event.ctrlKey
 }
 
 function pt2SegDist(x, minX, maxX){

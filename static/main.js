@@ -589,13 +589,14 @@ async function handleAutomaticInsertion(elem, lastToken){
     return false
 }
 
-async function handleValueChanged(input, inputValue){
+async function handleValueChanged(input, inputValue, latexString){
     let fieldName = input.getAttribute("field")
     let id = input.getAttribute("myID")
 
     //console.log('type of thing:', typeof getById[id].data[fieldName], getById[id].data[fieldName])
 
-    getById[id].data[fieldName] = inputValue
+    console.log('latex string', latexString)
+    getById[id].data[fieldName] = latexString
     input.style.minWidth = (inputValue.length) + 'ch';
 
     ////////// AUTOMATICALLY INSERT ELEMENT, BUT ONLY DO THIS WHEN NOT IN LITERAL MODE //////////
@@ -930,6 +931,7 @@ let currIdx = 0
  * @returns the amount of shift
  */
 function shiftCaret(delta, announce=true, offset=0){
+    console.log('CALL SHIFT CARET')
     /* ignore null shifts */
     if(delta == 0){
         return 0
@@ -1549,3 +1551,29 @@ function readPos(){
 }
 
 waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {inputFields[0].select(e); inputFields[0].showCaret()})
+
+
+
+
+////// READ FRIENDLY MODE
+function readfriendly(){
+    function traverse(node){
+        for(var field of node.fields){
+            if(node.data[field] && typeof node.data[field] != 'string'){
+                // another node
+                traverse(node.data[field])
+            }
+        }
+
+        if(node.id != 'top' && node.id != 'top.inside'){
+            create_new_folded(node, node.parent, node.slot)
+        }
+    }
+
+    settings.navStyle = 'linear'
+    var navStyleSelect = document.getElementById("navStyle")
+    navStyleSelect.selectedIndex = 1;
+
+    traverse(expression)
+    rerender(expression)
+}
