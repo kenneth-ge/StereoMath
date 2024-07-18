@@ -1431,7 +1431,7 @@ async function handleKeyDown(event, input) {
 
     //console.log('getting to test if try to delete')
     //console.log(event.key, input.tagName, input.selectionEnd)
-    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || (getField(input) && getField(input).getCaretend() == 0))){
+    if(event.key == 'Backspace' && (input.tagName == 'SPAN' || (!getField(input).isSelecting() && getField(input) && getField(input).getCaretend() == 0))){
         if(spatialNav != "OFF"){
             return
         }
@@ -1472,7 +1472,7 @@ async function handleKeyDown(event, input) {
         deleteFrom(node, idx)
 
         return true
-    }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || getField(input).getCaret() == getField(input).getValue().length)){
+    }else if(event.key == 'Delete' && (input.tagName == 'SPAN' || (!getField(input).isSelecting() && getField(input).getCaret() == getField(input).getValue().length))){
         event.preventDefault()
         event.stopPropagation()
 

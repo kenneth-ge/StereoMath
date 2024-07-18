@@ -410,8 +410,12 @@ function createInput(){
         updateUI(true, true)
     }
 
+    function isSelecting(){
+        return caret != caretend
+    }
+
     return {
-        html, select, blur, handleKey, setCaret, getCaretend, getValue, getCaret, setText
+        html, select, blur, handleKey, setCaret, getCaretend, getValue, getCaret, setText, isSelecting
     }
 }
 
