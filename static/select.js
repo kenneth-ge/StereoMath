@@ -155,13 +155,21 @@ function createInput(){
 
             let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
 
+            let oldPos = caretend - delta
+            let newPos = caretend
+            let fullString = string.substring(Math.min(oldPos, newPos), Math.max(oldPos, newPos))
+
+            if(fullString.length == 1 && (fullString.charAt(0) == 'a' || fullString.charAt(0) == 'A')){
+                fullString = "ae"
+            }
+
             // readaloud
             // if selecting, then announce what has just been (un)selected
             let selectedOrNot = newSize < oldSize ? ' unselected' : ' selected'
             if(delta < 0)
-                announceMessage((string[caretend] == 'a' ? 'A' : string[caretend]) + selectedOrNot, spatialPos)
+                announceMessage(fullString + selectedOrNot, spatialPos)
             else if(delta > 0)
-                announceMessage((string[caretend - 1] == 'a' ? 'A' : string[caretend - 1]) + selectedOrNot, spatialPos)
+                announceMessage(fullString + selectedOrNot, spatialPos)
             else{
                 // nothing changed
                 // TODO: custom behavior here?
@@ -214,13 +222,18 @@ function createInput(){
             let updatecaret = false
             // handle shift modifier
             if(!event.shiftKey){
+                console.log('handle modifier')
                 /*if(caret + delta < 0 || caret + delta > string.length){
                     delta = 0
                 }
                 caret += delta
                 caretend = caret*/
-                if(Math.abs(caret - caretend) > 2 && !event.ctrlKey){
-                    caretend -= delta
+                if(Math.abs(caret - caretend) > 1 && !event.ctrlKey){
+                    if(left)
+                        caretend = Math.min(caret, caretend - delta)
+                    else
+                        caretend = Math.max(caret, caretend - delta)
+                    //caretend -= delta
                 }
 
                 caret = caretend
