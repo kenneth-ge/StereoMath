@@ -344,7 +344,7 @@ function renderInput(text, field, name, objID, idx=undefined){
     inputFields[inputFieldCtr] = newInputField
     inputFieldCtr++
 
-    waitForElmCriteria(`${objID}.${field}`, e => e.getAttribute('fieldnum')).then(e => {getField(e).setCaret(0, 0)})
+    waitForElmCriteria(`${objID}.${field}`, e => e.getAttribute('fieldnum')).then(e => {getField(e).setCaret(0, 0); getField(e).hideCaret()})
     
     return newInputField.html(inputFieldCtr - 1, text, field, name, objID, idx)
 }
@@ -752,6 +752,11 @@ async function autocompleteChanged(value, focus2=false) {
         
         //getById[id].data[field] = newItem
         //getById[id + '.' + field] = newItem
+
+        if(!focus2)
+            waitForElmCriteria(`${newItem.id}.${newItem.focus}`, e => e.getAttribute('fieldnum')).then(e => {getField(e).showCaret()})
+        else
+            waitForElmCriteria(`${newItem.id}.${newItem.focus2}`, e => e.getAttribute('fieldnum')).then(e => {getField(e).showCaret()})
     }
 
     //console.log("expression before rerender:", expression.data['inside'])
@@ -840,6 +845,10 @@ async function focusOnFind(id, selectionStart=0){
 
     elem.setAttribute('focusOn', selectionStart)
     elem.focus()
+
+    if(getField(elem)){
+        getField(elem).showCaret()
+    }
 }
 
 
@@ -1220,6 +1229,10 @@ function collapse(node, idx){
     //updateMemoi(startingNode)
 
     focusElem(newElement)
+
+    if(getField(newElement)){
+        getField(newElement).showCaret()
+    }
 }
 
 /**
@@ -1535,4 +1548,4 @@ function readPos(){
 
 }
 
-waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {inputFields[0].select(e)})
+waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {inputFields[0].select(e); inputFields[0].showCaret()})

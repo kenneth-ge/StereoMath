@@ -427,8 +427,31 @@ function createInput(){
         return caret != caretend
     }
 
+    let immuneNum = 0
+
+    function hideCaret(){
+        console.log(immuneNum, 'call hide caret for this one ' + string)
+        if(immuneNum <= 0){
+            console.log(string, 'is not immune')
+            changeDisplay('none')
+        }
+        immuneNum--;
+    }
+
+    function showCaret(){
+        console.log('show caret for this one', string)
+        changeDisplay('block')
+        immuneNum++
+    }
+
     return {
-        html, select, blur, handleKey, setCaret, getCaretend, getValue, getCaret, setText, isSelecting
+        html, 
+        select, blur, 
+        hideCaret, showCaret,
+        handleKey, 
+        isSelecting,
+        setCaret, setText,
+        getCaretend, getValue, getCaret
     }
 }
 
