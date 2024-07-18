@@ -373,6 +373,7 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
         console.log('special case for folded nodes: ', obj)
         //return "SDFLKJSDFLKSJDFLKSJDF"
         let symbolSpanString = makeSymbolSpan('(...)', obj, 0, obj.readaloud(0))
+        symbolSpanString = symbolSpanString.replace('separator0', 'foldellipses')
         console.log('symbol span string in renderDiv', symbolSpanString)
         let retString = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" class="block outerblock" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" role="button" onkeydown="handleKeyDown(event, this)"> ${symbolSpanString}</div>`
         console.log('returning:', retString)
@@ -963,7 +964,7 @@ function shiftCaret(delta, announce=true, offset=0){
         nextNode = currentNode
 
         // this is a separator, go onto field
-        if(field.includes('separator')){
+        if(currentNode.name != 'folded' && field.includes('separator')){
             // get index of separator
             let separatorIdx = field.substring(field.indexOf("separator") + "separator".length)
 
@@ -974,7 +975,7 @@ function shiftCaret(delta, announce=true, offset=0){
 
             nextFieldIdx = fieldIdx
             nextField = currentNode.fields[nextFieldIdx]
-        }else{ // we're on a field, go onto separator
+        }else{ // we're on a field, go onto separator (or we're on a folded node)
             // field of separator is same as field of item when going left
             nextFieldIdx = currentNode.fields.indexOf(currentField)
             nextField = `separator${nextFieldIdx}`
@@ -996,7 +997,7 @@ function shiftCaret(delta, announce=true, offset=0){
                 nextNode = currentNode
                 nextFieldIdx = currentNode.fields.length - 1
                 nextField = currentNode.fields[nextFieldIdx]
-            }else if(field == 'prev'){ //left on prev-- keyword ON
+            }else if(field == 'prev' || currentNode.name == 'folded'){ //left on prev-- keyword ON
                 // go up one and then left
                 nextNode = currentNode.parent
                 nextFieldIdx = nextNode.fields.indexOf(currentNode.slot)// - 1
@@ -1015,7 +1016,8 @@ function shiftCaret(delta, announce=true, offset=0){
         nextNode = currentNode
 
         // this is a separator, go onto field
-        if(field.includes('separator')){
+        if((currentNode.name != 'folded') && field.includes('separator')){
+            console.log('go down this path XXXXX')
             // get index of separator
             let separatorIdx = field.substring(field.indexOf("separator") + "separator".length)
 
@@ -1054,7 +1056,7 @@ function shiftCaret(delta, announce=true, offset=0){
             if(field == 'prev'){ //right ON prev
                 nextFieldIdx = 0
                 nextField = nextNode.fields[0]
-            }else if(field == 'next'){ //right ON next
+            }else if(field == 'next' || currentNode.name == 'folded'){ //right ON next
                 // go up
                 nextNode = currentNode.parent
                 nextFieldIdx = nextNode.fields.indexOf(currentNode.slot) + 1
@@ -1121,26 +1123,32 @@ function shiftCaret(delta, announce=true, offset=0){
     // otherwise, move down until we get to our next selectable-- 
     // either 'next' or 'prev'
     if(delta < 0){
-        console.log(nextNode)
-
         nextNode = nextNode.data[nextField]
         nextField = 'next'
+
+        if(nextNode.name == 'folded'){
+            nextField = 'foldellipses'
+        }
 
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
         focusElem(associatedInput)
 
-        if(announce)
+        if(announce && nextNode.name != 'folded')
             afterTone(associatedInput)
     }else{
         nextNode = nextNode.data[nextField]
         nextField = 'prev'
 
+        if(nextNode.name == 'folded'){
+            nextField = 'foldellipses'
+        }
+
         let associatedInput = document.getElementById(nextNode.id + '.' + nextField)
 
         focusElem(associatedInput)
 
-        if(announce)
+        if(announce && nextNode.name != 'folded')
             beforeTone(associatedInput)
     }
 
@@ -1297,7 +1305,7 @@ async function handleKeyDown(event, input) {
                 let foldnode = create_new_folded(node, node.parent, node.slot)
                 rerender(node.parent)
 
-                let elem = await waitForElm(foldnode.id + '.prev')
+                let elem = await waitForElm(foldnode.id + '.foldellipses')
                 elem.focus()
             }
         }
