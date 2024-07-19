@@ -226,7 +226,7 @@ function calculateRelativePos(input){
 }
 
 function linesIntersect(min1, max1, min2, max2){
-    return max1 >= min2 && max2 >= min1
+    return !((max1 < min2) || (max2 < min1))
 }
 
 function normalize(x, y){

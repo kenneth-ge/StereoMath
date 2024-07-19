@@ -51,10 +51,10 @@ function handleSpatial(event){
             let length2 = (d - c)
 
             return {
-                a : a - length1 / 2,
-                b : b - length1 / 2,
-                c : c - length2 / 2,
-                d : d - length2 / 2
+                a : a,// - length1 / 2,
+                b : b,// - length1 / 2,
+                c : c,// - length2 / 2,
+                d : d,// - length2 / 2
             }
         }
 
@@ -70,7 +70,7 @@ function handleSpatial(event){
                 // needs to be in the same "column" or "interval"
 
                 let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
-                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
@@ -83,7 +83,7 @@ function handleSpatial(event){
                 }
 
                 let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
-                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
@@ -96,7 +96,7 @@ function handleSpatial(event){
                 }
 
                 let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
-                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
@@ -109,7 +109,7 @@ function handleSpatial(event){
                 }
 
                 let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
-                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
@@ -352,7 +352,7 @@ document.addEventListener("keydown", function(event) {
         if(wasFocused) wasFocused.focus()
 
         // enter spatial navigation mode
-        if(event.shiftKey){
+        if(event.metaKey){
             // if not in spatial, start in spatial
             if(spatialNav == 'OFF'){
                 spatialNav = 'ROW'
