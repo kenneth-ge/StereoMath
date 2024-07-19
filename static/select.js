@@ -394,6 +394,7 @@ function createInput(){
         }
     }
 
+    let witholdAnnounceCount = 0
     function select(div){
         //console.log('select, focusing')
         switchTone()
@@ -402,7 +403,10 @@ function createInput(){
         handleKeys = true
 
         changeDisplay('block')
-        playSound(caret != caretend, 0)
+        if(witholdAnnounceCount <= 0)
+            playSound(caret != caretend, 0)
+        else
+            witholdAnnounceCount--
     }
 
     function blur(){
@@ -481,14 +485,19 @@ function createInput(){
         if(immuneNum <= 0){
             console.log(string, 'is not immune')
             changeDisplay('none')
+        }else{
+            immuneNum--;
         }
-        immuneNum--;
     }
 
     function showCaret(){
         console.log('show caret for this one', string)
         changeDisplay('block')
         immuneNum++
+    }
+
+    function witholdAnnounce(){
+        witholdAnnounceCount++
     }
 
     return {
@@ -498,7 +507,8 @@ function createInput(){
         handleKey, 
         isSelecting,
         setCaret, setText,
-        getCaretend, getValue, getCaret
+        getCaretend, getValue, getCaret,
+        witholdAnnounce
     }
 }
 

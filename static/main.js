@@ -136,8 +136,12 @@ function handleSpatial(event){
         }
 
         // ignore first elem of dists b/c it's the current focus
-        if(dists[1][0][0] < Infinity)
+        if(dists[1][0][0] < Infinity){
+            let inputField = getField(topInputs[dists[1][1] - 1])
+            inputField.witholdAnnounce()
             focusElem(topInputs[dists[1][1] - 1])
+            announceMessage(inputField.getValue(), calculateRelativePos(topInputs[dists[1][1] - 1]).avg.x)
+        }
 
         return;
     }
