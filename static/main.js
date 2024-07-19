@@ -8,6 +8,140 @@ function handleSpatial(event){
     event.preventDefault()
     event.stopPropagation()
 
+    /** Arrow keys */
+    if(event.key == 'ArrowUp' || event.key == 'ArrowDown' || event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
+        // find closest input field to left, right, up, or down
+        
+        // assume that there is an input selected
+        const topInputs = document.querySelectorAll('div[type="input"]')
+        let inputWithCurr = [selected].concat(Array.from(topInputs))
+        let rects = inputsToRects(inputWithCurr)
+
+        // transform rect coordinates
+        let boundaryid = 'top'
+        if(document.getElementById('top.inside')){
+            boundaryid = 'top.inside'
+        }
+
+        let {left, top, right, bottom} = document.getElementById(boundaryid).getBoundingClientRect()
+        const totalsize = {
+            x: right - left,
+            y: bottom - top
+        }
+
+        for(var r of rects){
+            r.min.x -= left
+            r.min.y -= top
+            r.max.x -= left
+            r.max.y -= top
+
+            r.min.x /= totalsize.x
+            r.min.y /= totalsize.y
+            r.max.x /= totalsize.x
+            r.max.y /= totalsize.y
+        }
+
+        let current = rects[0]
+        let dists = []
+
+        function expandInterval(a, b, c, d){
+            //console.log(a, b, c, d)
+
+            let length1 = (b - a)
+            let length2 = (d - c)
+
+            return {
+                a : a - length1 / 2,
+                b : b - length1 / 2,
+                c : c - length2 / 2,
+                d : d - length2 / 2
+            }
+        }
+
+        function getDist(curr, other){
+            let vertPref = event.key == 'ArrowUp' ? 1 : (event.key == 'ArrowDown' ? -1 : 0)
+            let horizPref = event.key == 'ArrowRight' ? 1 : (event.key == 'ArrowLeft' ? -1 : 0)
+
+            if(event.key == 'ArrowUp'){
+                if(other.min.y > curr.max.y){
+                    return [Infinity, Infinity]
+                }
+
+                // needs to be in the same "column" or "interval"
+
+                let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+
+                if(!intersects){
+                    return [Infinity, Infinity]
+                }
+
+                return [Math.abs(other.avg.y - curr.avg.y), intersects ? 0 : Math.abs(other.avg.x - curr.avg.x)]
+            }else if(event.key == 'ArrowDown'){
+                if(other.max.y < curr.min.y){
+                    return [Infinity, Infinity]
+                }
+
+                let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+
+                if(!intersects){
+                    return [Infinity, Infinity]
+                }
+
+                return [Math.abs(other.avg.y - curr.avg.y), intersects ? 0 : Math.abs(other.avg.x - curr.avg.x)]
+            }else if(event.key == 'ArrowLeft'){
+                if(other.min.x > curr.max.x){
+                    return [Infinity, Infinity]
+                }
+
+                let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+
+                if(!intersects){
+                    return [Infinity, Infinity]
+                }
+
+                return [Math.abs(other.avg.x - curr.avg.x), intersects ? 0 : Math.abs(other.avg.y - curr.avg.y)]
+            }else if(event.key == 'ArrowRight'){
+                if(other.max.x < curr.min.x){
+                    return [Infinity, Infinity]
+                }
+
+                let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
+                let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.c)
+
+                if(!intersects){
+                    return [Infinity, Infinity]
+                }
+
+                return [Math.abs(other.avg.x - curr.avg.x), intersects ? 0 : Math.abs(other.avg.y - curr.avg.y)]
+            }
+        }
+
+        for(var i = 1; i < rects.length; i++){
+            dists.push([getDist(current, rects[i]), i])
+        }
+
+        dists.sort((a, b) => {
+            if(a[0][0] - b[0][0] != 0){
+                return a[0][0] - b[0][0]
+            }
+                
+            return a[0][1] - b[0][1]
+        })
+
+        for(var [[maindist, otherdist], idx] of dists){
+            console.log(maindist, otherdist, getField(topInputs[idx - 1]).getValue())
+        }
+
+        // ignore first elem of dists b/c it's the current focus
+        if(dists[1][0][0] < Infinity)
+            focusElem(topInputs[dists[1][1] - 1])
+
+        return;
+    }
+
     let loc = getLocation(event.key, event.code)
 
     if(!loc){
@@ -597,7 +731,7 @@ async function handleValueChanged(input, inputValue, latexString){
 
     console.log('latex string', latexString)
     getById[id].data[fieldName] = latexString
-    input.style.minWidth = (inputValue.length) + 'ch';
+    //input.style.minWidth = (inputValue.length) + 'ch';
 
     ////////// AUTOMATICALLY INSERT ELEMENT, BUT ONLY DO THIS WHEN NOT IN LITERAL MODE //////////
     // hack because onkeydown will trigger in span, and then trigger again input after focusing
@@ -1378,70 +1512,78 @@ async function handleKeyDown(event, input) {
         return true
     }
 
-    /**
-     * Up and down-- move from one node to the next
-     */
-    if(event.key == 'ArrowUp'){
-        let delta = shiftCaret(-1)
-
-        if(delta == 0){
-            focusElem(document.getElementById('top.inside'))
+    /** Arrow keys */
+    if(event.key == 'ArrowUp' || event.key == 'ArrowDown' || event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
+        if(spatialNav != "OFF"){
+            handleSpatial(event)
+            return
         }
 
-        event.stopPropagation();
-        event.preventDefault()
-        return true
-    }else if(event.key == 'ArrowDown'){
-        shiftCaret(1)
-        event.stopPropagation();
-        event.preventDefault()
-        return true
-    }
-
-    if (event.key === 'ArrowLeft' && !event.shiftKey) {
-        // Cursor is at the beginning of the input, prevent moving left
-        //event.preventDefault();
-        //console.log('arrow left', input.tagName, cursorPosition)
-
-        //console.log('arrowleft', cursorPosition)
-        if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition <= 0){
+        /**
+         * Up and down-- move from one node to the next
+         */
+        if(event.key == 'ArrowUp'){
             let delta = shiftCaret(-1)
 
-            event.preventDefault()
-            event.stopImmediatePropagation()
+            if(delta == 0){
+                focusElem(document.getElementById('top.inside'))
+            }
 
+            event.stopPropagation();
+            event.preventDefault()
+            return true
+        }else if(event.key == 'ArrowDown'){
+            shiftCaret(1)
+            event.stopPropagation();
+            event.preventDefault()
             return true
         }
 
-        event.stopPropagation();
-        return false
-    } else if (event.key === 'ArrowRight' && !event.shiftKey) {
-        // Cursor is at the end of the input, prevent moving right
-        //event.preventDefault();
-        if(settings.navStyle == 'linear'){
-            if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length - 1){
-                // extra shift if we're at the very end of an input field
-                // aka already right before the operator
-                if(getField(input) && cursorPosition >= getField(input).length){
-                    shiftCaret(2)
-                }else{
-                    shiftCaret(1)
+        if (event.key === 'ArrowLeft' && !event.shiftKey) {
+            // Cursor is at the beginning of the input, prevent moving left
+            //event.preventDefault();
+            //console.log('arrow left', input.tagName, cursorPosition)
+
+            //console.log('arrowleft', cursorPosition)
+            if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition <= 0){
+                let delta = shiftCaret(-1)
+
+                event.preventDefault()
+                event.stopImmediatePropagation()
+
+                return true
+            }
+
+            event.stopPropagation();
+            return false
+        } else if (event.key === 'ArrowRight' && !event.shiftKey) {
+            // Cursor is at the end of the input, prevent moving right
+            //event.preventDefault();
+            if(settings.navStyle == 'linear'){
+                if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length - 1){
+                    // extra shift if we're at the very end of an input field
+                    // aka already right before the operator
+                    if(getField(input) && cursorPosition >= getField(input).length){
+                        shiftCaret(2)
+                    }else{
+                        shiftCaret(1)
+                    }
+                    event.preventDefault()
+                    event.stopImmediatePropagation()
+                    return true
                 }
-                event.preventDefault()
-                event.stopImmediatePropagation()
-                return true
+            }else{
+                console.log('sdlfkjdslkfj')
+                if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length){
+                    shiftCaret(1)
+                    event.preventDefault()
+                    event.stopImmediatePropagation()
+                    return true
+                }
             }
-        }else{
-            console.log('sdlfkjdslkfj')
-            if(input.getAttribute('type') != 'input' || input.tagName == 'SPAN' || cursorPosition >= getField(input).getValue().length){
-                shiftCaret(1)
-                event.preventDefault()
-                event.stopImmediatePropagation()
-                return true
-            }
+            event.stopPropagation();
+            return false
         }
-        event.stopPropagation();
-        return false
     }
 
     //console.log('getting to test if try to delete')

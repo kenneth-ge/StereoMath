@@ -74,7 +74,7 @@ function inputsToRects(inputs){
     const maxY = inputRect.bottom;
 
     // Store the bounding box coordinates
-    inputRectangles.push({ min: {x: minX, y: minY}, max: {x: maxX, y: maxY} });
+    inputRectangles.push({ min: {x: minX, y: minY}, max: {x: maxX, y: maxY}, avg: {x : (minX + maxX) / 2, y : (minY + maxY) / 2} });
     }
 
     return inputRectangles
@@ -223,6 +223,10 @@ function calculateRelativePos(input){
             y: (input.min.y + input.max.y - 2 * top) / (2 * totalsize.y),
         }
     }
+}
+
+function linesIntersect(min1, max1, min2, max2){
+    return max1 >= min2 && max2 >= min1
 }
 
 function normalize(x, y){

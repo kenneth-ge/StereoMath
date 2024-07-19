@@ -30,15 +30,16 @@
   background-color: black;
   color: white;
   font-weight: bold;
-    height: 50px;
-    width: 50px;
-    min-width: 50px; /* Set a minimum width */
-    box-sizing: content-box;
-    border: none;
-    /*padding: 8px;
-    margin-bottom: 10px;*/
-    font-size: 45px; /* Increase font size */
-    font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
+  /*height: 50px;*/
+  /*width: 50px;*/
+  min-width: 50px; /* Set a minimum width */
+  min-height: 50px;
+  box-sizing: content-box;
+  border: none;
+  /*padding: 8px;
+  margin-bottom: 10px;*/
+  font-size: 45px; /* Increase font size */
+  font-family: 'Courier New', Courier, monospace; /* Modern font stack for headings */
 }
 
 .placeholder:focus{
@@ -124,10 +125,14 @@
 /** Custom input field */
 
   .inputfield {
+    min-width: 100%;
     max-width: 100%;
     background-color: black;
     display: flex;
     flex-direction: row;
+    align-self: stretch;
+    justify-content: center;
+    align-items: center;
     /*
     padding: 50px;
     background-color: black;
@@ -136,7 +141,9 @@
 
 .caret {
     min-width: 10px; /* Adjust width as needed */
+    width: 10px;
     /* height: 100%; Full height of the container */
+    height: 50px;
     background-color: orange; /* Caret color */
     animation: blink 1s step-end infinite; /* Blinking animation */
     /*opacity: 50%;*/
@@ -157,6 +164,7 @@
 
 .highlighted {
     background-color: yellow;
+    color: black;
 }
 
 
