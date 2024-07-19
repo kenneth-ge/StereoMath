@@ -140,7 +140,7 @@ function handleSpatial(event){
             let inputField = getField(topInputs[dists[1][1] - 1])
             inputField.witholdAnnounce()
             focusElem(topInputs[dists[1][1] - 1])
-            announceMessage(inputField.getValue(), calculateRelativePos(topInputs[dists[1][1] - 1]).avg.x)
+            announceMessage(inputField.getValue().replace('…', ' ellipses '), calculateRelativePos(topInputs[dists[1][1] - 1]).avg.x)
         }
 
         return;
