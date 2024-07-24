@@ -7,6 +7,7 @@ let player = new PCMPlayer({
 let saved = new Map()
 
 async function playAudio(text, left=1, right=1){
+    console.log(saved)
     let data = undefined
     if(saved.has(text)){
         data = saved.get(text)

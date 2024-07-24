@@ -356,7 +356,7 @@ document.addEventListener("keydown", function(event) {
         if(wasFocused) wasFocused.focus()
 
         // enter spatial navigation mode
-        if(event.metaKey){
+        if(event.shiftKey){
             // if not in spatial, start in spatial
             if(spatialNav == 'OFF'){
                 spatialNav = 'ROW'
