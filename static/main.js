@@ -198,18 +198,33 @@ function handleSpatial(event){
         let closestYDist = rects.reduce((acc, c) => {
             return Math.min(acc, pt2SegDist(p.y, c.min.y, c.max.y))
         }, 99999)
-        console.log(closestYDist)
+        //console.log(closestYDist)
+
+        closestYDist = Math.max(closestYDist, 50)
+
         rects = rects.filter(
             (r) => pt2SegDist(p.y, r.min.y, r.max.y) <= closestYDist)
-        rects = rects.sort((a, b) => a.y - b.y)
+        rects = rects.sort((a, b) => Math.abs(p.y - a.y) - Math.abs(p.y - b.y))
     }else{
         // we do this in order to make sure that the set is nonempty
         let closestXDist = rects.reduce((acc, c) => {
             return Math.min(acc, pt2SegDist(p.x, c.min.x, c.max.x))
         }, 99999)
+
+        closestXDist = Math.max(closestXDist, 50)
+
+        //console.log(closestXDist)
+
+        //console.log('all rects', rects)
+
         rects = rects.filter(
             (r) => pt2SegDist(p.x, r.min.x, r.max.x) <= closestXDist)
-        rects = rects.sort((a, b) => a.x - b.x)
+
+        //console.log('rects remaining:', rects)
+
+        rects = rects.sort((a, b) => Math.abs(p.x - a.x) - Math.abs(p.x - b.x))
+
+        //console.log('sorted rects:', rects)
     }
 
     var best = 0
