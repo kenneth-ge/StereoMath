@@ -85,6 +85,7 @@
     height: 30px; /* Adjust height as needed */
     border-radius: 50%;
     background-color: yellow;
+    opacity: 75%;
     position: absolute;
     top: 0px;
     left: 0px;

@@ -2,6 +2,28 @@ let autocomplete = document.getElementById("autocomplete")
 let equation_picker = document.getElementById("equation-picker")
 let tone = document.getElementById('tone')
 
+let spatialCursor = {
+    x : 0,
+    y : 0
+}
+
+function updateSpatialCursor(){
+    let boundaryid = 'top'
+    if(document.getElementById('top.inside')){
+        boundaryid = 'top.inside'
+    }
+
+    let {left, top, right, bottom} = document.getElementById(boundaryid).getBoundingClientRect()
+    const totalsize = {
+        x: right - left,
+        y: bottom - top
+    }
+
+    // transform keyboard coords to actual coords, and move blue circle accordingly
+    const blueCirc = document.getElementById('bluecirc')
+    blueCirc.style.left = (spatialCursor.x * totalsize.x + left - 15) + "px"; // Set the left position
+    blueCirc.style.top = (spatialCursor.y * totalsize.y + top - 15) + "px";   // Set the top position
+}
 
 // true/false for row/col
 function handleSpatial(event){
@@ -13,9 +35,15 @@ function handleSpatial(event){
         // find closest input field to left, right, up, or down
         
         // assume that there is an input selected
-        const topInputs = document.querySelectorAll('div[type="input"]')
-        let inputWithCurr = [selected].concat(Array.from(topInputs))
-        let rects = inputsToRects(inputWithCurr)
+        let topInputs = Array.from(document.querySelectorAll('div[type="input"]', 'span[type="symbol"]'))
+
+        topInputs = topInputs.concat(Array.from(document.querySelectorAll('span[type="symbol"]')))
+
+        //console.log('these are the top inputs')
+        //console.log(topInputs)
+
+        //let inputWithCurr = [selected].concat(Array.from(topInputs))
+        let rects = inputsToRects(topInputs)
 
         // transform rect coordinates
         let boundaryid = 'top'
@@ -34,14 +62,17 @@ function handleSpatial(event){
             r.min.y -= top
             r.max.x -= left
             r.max.y -= top
+            r.avg.x -= left
+            r.avg.y -= top
 
             r.min.x /= totalsize.x
             r.min.y /= totalsize.y
             r.max.x /= totalsize.x
             r.max.y /= totalsize.y
+            r.avg.x /= totalsize.x
+            r.avg.y /= totalsize.y
         }
 
-        let current = rects[0]
         let dists = []
 
         function expandInterval(a, b, c, d){
@@ -63,64 +94,64 @@ function handleSpatial(event){
             let horizPref = event.key == 'ArrowRight' ? 1 : (event.key == 'ArrowLeft' ? -1 : 0)
 
             if(event.key == 'ArrowUp'){
-                if(other.min.y > curr.max.y){
+                if(other.min.y > curr.y){
                     return [Infinity, Infinity]
                 }
 
                 // needs to be in the same "column" or "interval"
 
-                let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
+                let stuff = expandInterval(curr.x, curr.x, other.min.x, other.max.x)
                 let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
                 }
 
-                return [Math.abs(other.avg.y - curr.avg.y), intersects ? 0 : Math.abs(other.avg.x - curr.avg.x)]
+                return [Math.abs(other.avg.y - curr.y), intersects ? 0 : Math.abs(other.avg.x - curr.x)]
             }else if(event.key == 'ArrowDown'){
-                if(other.max.y < curr.min.y){
+                if(other.max.y < curr.y){
                     return [Infinity, Infinity]
                 }
 
-                let stuff = expandInterval(curr.min.x, curr.max.x, other.min.x, other.max.x)
+                let stuff = expandInterval(curr.x, curr.x, other.min.x, other.max.x)
                 let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
                 }
 
-                return [Math.abs(other.avg.y - curr.avg.y), intersects ? 0 : Math.abs(other.avg.x - curr.avg.x)]
+                return [Math.abs(other.avg.y - curr.y), intersects ? 0 : Math.abs(other.avg.x - curr.x)]
             }else if(event.key == 'ArrowLeft'){
-                if(other.min.x > curr.max.x){
+                if(other.min.x > curr.x){
                     return [Infinity, Infinity]
                 }
 
-                let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
+                let stuff = expandInterval(curr.y, curr.y, other.min.y, other.max.y)
                 let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
                 }
 
-                return [Math.abs(other.avg.x - curr.avg.x), intersects ? 0 : Math.abs(other.avg.y - curr.avg.y)]
+                return [Math.abs(other.avg.x - curr.x), intersects ? 0 : Math.abs(other.avg.y - curr.y)]
             }else if(event.key == 'ArrowRight'){
-                if(other.max.x < curr.min.x){
+                if(other.max.x < curr.x){
                     return [Infinity, Infinity]
                 }
 
-                let stuff = expandInterval(curr.min.y, curr.max.y, other.min.y, other.max.y)
+                let stuff = expandInterval(curr.y, curr.y, other.min.y, other.max.y)
                 let intersects = linesIntersect(stuff.a, stuff.b, stuff.c, stuff.d)
 
                 if(!intersects){
                     return [Infinity, Infinity]
                 }
 
-                return [Math.abs(other.avg.x - curr.avg.x), intersects ? 0 : Math.abs(other.avg.y - curr.avg.y)]
+                return [Math.abs(other.avg.x - curr.x), intersects ? 0 : Math.abs(other.avg.y - curr.y)]
             }
         }
 
-        for(var i = 1; i < rects.length; i++){
-            dists.push([getDist(current, rects[i]), i])
+        for(var i = 0; i < rects.length; i++){
+            dists.push([getDist(spatialCursor, rects[i]), i])
         }
 
         dists.sort((a, b) => {
@@ -132,16 +163,42 @@ function handleSpatial(event){
         })
 
         for(var [[maindist, otherdist], idx] of dists){
-            console.log(maindist, otherdist, getField(topInputs[idx - 1]).getValue())
+            //console.log(topInputs[idx], idx, topInputs)
+            if(getField(topInputs[idx]))
+                console.log(maindist, otherdist, getField(topInputs[idx]).getValue())
+            else
+                console.log(maindist, otherdist, topInputs[idx])
         }
 
         // ignore first elem of dists b/c it's the current focus
-        if(dists[1][0][0] < Infinity){
-            let inputField = getField(topInputs[dists[1][1] - 1])
-            inputField.witholdAnnounce()
-            focusElem(topInputs[dists[1][1] - 1])
-            let relPos = calculateRelativePos(topInputs[dists[1][1] - 1])
-            announceMessageSpatial(inputField.getValue().replace('…', ' ellipses '), relPos)
+        let elem = dists[0]
+
+
+        if(selected == topInputs[elem[1]]){
+            console.log('select second elem')
+            elem = dists[1]
+        }
+
+        if(elem[0][0] < Infinity){
+            let topInput = topInputs[elem[1]]
+            let inputField = getField(topInput)
+            focusElem(topInput)
+            let relPos = calculateRelativePos(topInput)
+            if(inputField){
+                inputField.witholdAnnounce()
+                announceMessageSpatial(inputField.getValue().replace('…', ' ellipses '), relPos)
+            }else{
+                //announceMessageSpatial(topInput.getAttribute('custom-label'), relPos)
+            }
+
+            if(event.key == 'ArrowDown' || event.key == 'ArrowUp'){
+                // update y coord of spatial cursor
+                spatialCursor.y = relPos.avg.y
+            }else{
+                // update x coord of spatial cursor
+                spatialCursor.x = relPos.avg.x
+            }
+            updateSpatialCursor()
         }
 
         return;
@@ -168,10 +225,9 @@ function handleSpatial(event){
         y: bottom - top
     }
 
-    // transform keyboard coords to actual coords, and move blue circle accordingly
-    const blueCirc = document.getElementById('bluecirc')
-    blueCirc.style.left = (p.x * totalsize.x + left) + "px"; // Set the left position
-    blueCirc.style.top = (p.y * totalsize.y + top) + "px";   // Set the top position
+    spatialCursor.x = p.x
+    spatialCursor.y = p.y
+    updateSpatialCursor()
 
     let rects = inputsToRects(topInputs)
 
@@ -590,11 +646,18 @@ let focusIdx = 0
 
 function amSelecting(input){
     let focusOn = input.getAttribute('focusOn')
+    let relPos = calculateRelativePos(input)
     focusIdx += 1
+
+    if(spatialNav == 'OFF'){
+        spatialCursor.x = relPos.avg.x;
+        spatialCursor.y = relPos.avg.y;
+        updateSpatialCursor()
+    }
 
     // console.log(input.tagName, input)
     if(input.tagName == 'SPAN'){
-        announceMessageSpatial(input.getAttribute('custom-label'), calculateRelativePos(input))
+        announceMessageSpatial(input.getAttribute('custom-label'), relPos)
     }
 
     if(focusOn){

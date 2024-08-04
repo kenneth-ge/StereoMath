@@ -67,14 +67,15 @@ function inputsToRects(inputs){
     const inputRectangles = [];
 
     for (const input of inputs) {
-    const inputRect = input.getBoundingClientRect();
-    const minX = inputRect.left;
-    const minY = inputRect.top;
-    const maxX = inputRect.right;
-    const maxY = inputRect.bottom;
+        //console.log('this is the input:', input)
+        const inputRect = input.getBoundingClientRect();
+        const minX = inputRect.left;
+        const minY = inputRect.top;
+        const maxX = inputRect.right;
+        const maxY = inputRect.bottom;
 
-    // Store the bounding box coordinates
-    inputRectangles.push({ min: {x: minX, y: minY}, max: {x: maxX, y: maxY}, avg: {x : (minX + maxX) / 2, y : (minY + maxY) / 2} });
+        // Store the bounding box coordinates
+        inputRectangles.push({ min: {x: minX, y: minY}, max: {x: maxX, y: maxY}, avg: {x : (minX + maxX) / 2, y : (minY + maxY) / 2} });
     }
 
     return inputRectangles
