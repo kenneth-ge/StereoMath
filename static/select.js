@@ -150,21 +150,23 @@ function createInput(){
 
     /** play this char, but in a spatial context */
     function spatialChar(c){
-        let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
+        let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId))
 
         if(c.length > 1 || !charAudioMap[c]){
             if(c == '…')
                 c = 'ellipses'
 
             // fallback if we accidentally put a string in here, rather than a char
-            announceMessage(c, spatialPos)
+            announceMessageSpatial(c, spatialPos)
             console.error(c, 'should be one single char or missing audio file')
             return;
         }
 
+        announceMessageSpatial(c, spatialPos)
+
         //console.log('playspatial', c, charAudioMap[c], spatialPos)
 
-        charAudioMap[c].playSpatial(1 - spatialPos, spatialPos)
+        //charAudioMap[c].playSpatial(1 - spatialPos, spatialPos)
     }
 
     /** Play sound/readaloud current action (e.g. what character you're highlighting) */
@@ -173,7 +175,7 @@ function createInput(){
             let oldSize = Math.abs((caretend - delta) - caret)
             let newSize = Math.abs(caretend - caret)
 
-            let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x
+            let spatialPos = calculateRelativePos(document.getElementById('caretend' + fieldId))
 
             let oldPos = caretend - delta
             let newPos = caretend
@@ -188,9 +190,9 @@ function createInput(){
             // if selecting, then announce what has just been (un)selected
             let selectedOrNot = newSize < oldSize ? ' unselected' : ' selected'
             if(delta < 0)
-                announceMessage(fullString + selectedOrNot, spatialPos)
+                announceMessageSpatial(fullString + selectedOrNot, spatialPos)
             else if(delta > 0)
-                announceMessage(fullString + selectedOrNot, spatialPos)
+                announceMessageSpatial(fullString + selectedOrNot, spatialPos)
             else{
                 // nothing changed
                 // TODO: custom behavior here?
@@ -367,7 +369,7 @@ function createInput(){
             if(deleted.length <= 1){
                 spatialChar(deleted.charAt(0))
             }else{
-                announceMessage(deleted, calculateRelativePos(document.getElementById('caretend' + fieldId)).avg.x)
+                announceMessageSpatial(deleted, calculateRelativePos(document.getElementById('caretend' + fieldId)))
             }
         }
 

@@ -6,8 +6,8 @@ let player = new PCMPlayer({
 
 let saved = new Map()
 
-async function playAudio(text, left=1, right=1){
-    console.log(saved)
+async function playAudio(text, left=1, right=1, pitchShift=0){
+    //console.log(saved)
     let data = undefined
     if(saved.has(text)){
         data = saved.get(text)
@@ -23,5 +23,5 @@ async function playAudio(text, left=1, right=1){
     
     player.volume(left, right)
 
-    player.feed(data)
+    player.feed(new Int16Array(data), pitchShift)
 }

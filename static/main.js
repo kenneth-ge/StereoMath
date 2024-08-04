@@ -140,7 +140,8 @@ function handleSpatial(event){
             let inputField = getField(topInputs[dists[1][1] - 1])
             inputField.witholdAnnounce()
             focusElem(topInputs[dists[1][1] - 1])
-            announceMessage(inputField.getValue().replace('…', ' ellipses '), calculateRelativePos(topInputs[dists[1][1] - 1]).avg.x)
+            let relPos = calculateRelativePos(topInputs[dists[1][1] - 1])
+            announceMessageSpatial(inputField.getValue().replace('…', ' ellipses '), relPos)
         }
 
         return;
@@ -263,7 +264,7 @@ function handleSpatial(event){
 
         //let numBefore = getNumBefore(node, field)
 
-        announceMessage(topInputs[best].getAttribute('description') + ' ' + getField(topInputs[best]).getValue(), calculateRelativePos(topInputs[best]).avg.x)
+        announceMessageSpatial(topInputs[best].getAttribute('description') + ' ' + getField(topInputs[best]).getValue(), calculateRelativePos(topInputs[best]))
 
         console.log('play sounds:', rects.length, bestCnt)
 
@@ -593,7 +594,7 @@ function amSelecting(input){
 
     // console.log(input.tagName, input)
     if(input.tagName == 'SPAN'){
-        announceMessage(input.getAttribute('custom-label'), calculateRelativePos(input).avg.x)
+        announceMessageSpatial(input.getAttribute('custom-label'), calculateRelativePos(input))
     }
 
     if(focusOn){
@@ -1030,18 +1031,18 @@ function switchTone(){
 }
 
 function beforeTone(field){
-    let pos = calculateRelativePos(field).avg.x
-    playOpenParen(pos)
+    let pos = calculateRelativePos(field)
+    playOpenParen(pos.avg.x)
     if(settings.verbosity == 'high'){
-        announceMessage('L paren', pos)
+        announceMessageSpatial('L paren', pos)
     }
 }
 
 function afterTone(field){
-    let pos = calculateRelativePos(field).avg.x
-    playCloseParen(pos)
+    let pos = calculateRelativePos(field)
+    playCloseParen(pos.avg.x)
     if(settings.verbosity == 'high'){
-        announceMessage('R paren', pos)
+        announceMessageSpatial('R paren', pos)
     }
 }
 
@@ -1513,14 +1514,14 @@ async function handleKeyDown(event, input) {
 
     if(event.altKey && event.key == 'Insert'){
         //narrate this element
-        announceMessage(input.getAttribute('description') + ' ' + getField(input).getValue(), calculateRelativePos(input).avg.x)
+        announceMessageSpatial(input.getAttribute('description') + ' ' + getField(input).getValue(), calculateRelativePos(input))
         return true
     }
 
     if(event.ctrlKey && event.altKey && event.key == 'Insert'){
         //narrate this element
         //console.log(input)
-        announceMessage(getField(input).getValue(), calculateRelativePos(input).avg.x)
+        announceMessageSpatial(getField(input).getValue(), calculateRelativePos(input))
         return true
     }
 

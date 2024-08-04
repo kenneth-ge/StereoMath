@@ -233,7 +233,11 @@ function normalize(x, y){
     return {left: x / Math.max(x, y), right: y / Math.max(x, y)}
 }
 
-function announceMessage(message, pos = 0.5) {
+function announceMessageSpatial(message, relPos){
+    announceMessage(message, relPos.avg.x, (relPos.avg.y - 0.5) * -10)
+}
+
+function announceMessage(message, pos = 0.5, pitchShift=0) {
     if(!message)
         return
     
@@ -245,11 +249,12 @@ function announceMessage(message, pos = 0.5) {
     var log = document.getElementById('announcementLog')
     log.innerHTML = message + '<br>' + log.innerHTML
     
+    console.log('Message played:', message)
     console.log('use remote tts:', settings.useRemoteTTS)
 
     if(settings.useRemoteTTS == 'true'){
         let {left, right} = normalize(1 - pos, pos)
-        playAudio(message, left, right)
+        playAudio(message, left, right, pitchShift)
     }else{
         // using built-in screen reader
         var alertDiv = document.getElementById('screenReaderAlert');
