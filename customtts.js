@@ -10,55 +10,80 @@ audioProcess.stdin.setEncoding('ascii');
 
 audioProcess.stderr.pipe(process.stderr)
 
+const { Mutex } = require('async-mutex');
+
+const mutex = new Mutex();
+
+let counter = 0
+let currFinished = 0
+
+let resMap = new Map()
+
+let audioBuffer = Buffer.alloc(0);
+
+let dataListener = async (data) => {
+    //let release = await mutex.acquire()
+    audioBuffer = Buffer.concat([audioBuffer, data]);
+    //release()
+}
+
+function until(conditionFunction) {
+    const poll = resolve => {
+        if(conditionFunction()) resolve();
+        else setTimeout(_ => poll(resolve), 400);
+    }
+
+    return new Promise(poll);
+}
+
+let stopListener = async (data) => {
+    let release = await mutex.acquire()
+    let dataString = data.toString()
+    console.log('stderr data:', dataString)
+    if(dataString.includes("Real-time factor"/* || dataString.includes("Waiting for audio")*/)){
+        await until(() => audioBuffer.length > 0)
+        console.log('audio buffer:', audioBuffer.length)
+        console.log('sending')
+        resMap.get(currFinished).send(Buffer.from(audioBuffer, 'binary'))
+        resMap.delete(currFinished)
+        audioBuffer = Buffer.alloc(0);
+        currFinished++
+    }else{
+        console.error(`Piper error: ${dataString}`)
+        //reject(`Piper error: ${dataString}`);
+    }
+    release()
+}
+
+// Capture stdout data (assuming it's raw audio)
+audioProcess.stdout.on('data', dataListener);
+
+audioProcess.stderr.on('data', stopListener)
+
+// Handle process exit
+audioProcess.on('exit', (code, signal) => {
+    console.log('unused audio buffer:', audioBuffer.length)
+});
+
+// Handle errors
+audioProcess.on('error', (err) => {
+    console.error(`Error executing process: ${err}`)
+    reject(`Error executing process: ${err}`);
+});
+
+
 // Function to execute your binary program and capture audio output
-function synthesize(text) {
-    return new Promise((resolve, reject) => {
-        //audioProcess.stdout.pipe(process.stdout)
+async function synthesize(text, res) {
+    let release = await mutex.acquire()
+    let thisCount = counter
+    resMap.set(thisCount, res)
+    counter++
 
-        let audioBuffer = Buffer.alloc(0);
+    console.log('Send to Piper:', text)
 
-        let dataListener = (data) => {
-            audioBuffer = Buffer.concat([audioBuffer, data]);
-        }
-
-        let stopListener = (data) => {
-            let dataString = data.toString()
-            console.log('stderr data:', dataString)
-            if(audioBuffer.length > 0 && (dataString.includes("Real-time factor") || dataString.includes("Waiting for audio"))){
-                audioProcess.stderr.off('data', stopListener)
-                audioProcess.stdout.off('data', dataListener)
-                console.log('audio buffer:', audioBuffer.length)
-                console.log('sending')
-                resolve(audioBuffer); // Resolve with captured audio data
-            }else{
-                //reject(`Piper error: ${dataString}`);
-            }
-        }
-
-        // Capture stdout data (assuming it's raw audio)
-        audioProcess.stdout.on('data', dataListener);
-
-        audioProcess.stderr.on('data', stopListener)
-
-        audioProcess.stdin.write(text);
-        audioProcess.stdin.write('\n');
-
-        // Handle process exit
-        audioProcess.on('exit', (code, signal) => {
-            console.log('audio buffer:', audioBuffer.length)
-            if (code === 0) {
-                resolve(audioBuffer); // Resolve with captured audio data
-            } else {
-                reject(`Process exited with code ${code} and signal ${signal}`);
-            }
-        });
-
-        // Handle errors
-        audioProcess.on('error', (err) => {
-            console.error(`Error executing process: ${err}`)
-            reject(`Error executing process: ${err}`);
-        });
-    });
+    audioProcess.stdin.write(text);
+    audioProcess.stdin.write('\n');
+    release()
 }
 
 module.exports = {

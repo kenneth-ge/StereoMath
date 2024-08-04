@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/kenneth-ge/NL-Latex-Survey#readme",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
     "web-audio-api": "^0.2.2"

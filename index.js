@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 app.get('/gettts', async (req, res) => {
   res.contentType('audio/pcm');
-  res.send(Buffer.from(await synthesize(req.query.text), 'binary'))
+  await synthesize(req.query.text, res)
 });
 
 app.get('/testinput', (req, res) => {

@@ -9,7 +9,7 @@ const NodeDirection = {
 };
 
 let settings = {
-    verbosity: 'high',
+    verbosity: 'low',
     navStyle: 'equation',
     playOn: 'anywhere',
     useRemoteTTS: 'true'
