@@ -568,8 +568,8 @@ function makeSymbolSpan(symbol, parent, idx, readaloud){
     if(!symbol || symbol == ''){
         return ``
     }
-    console.log('make symbol span')
-    console.log(`<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`)
+    //console.log('make symbol span')
+    //console.log(`<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`)
     // role="presentation"
     return `<span type="symbol" tabindex="-1" aria-hidden="true" role="presentation" custom-label="${readaloud}" class="separator" myId="${parent.id}" id="${parent.id}.separator${idx}" field="separator${idx}" ${keyCallback}="handleKeyDown(event, this)" onfocus="amSelecting(this)">${symbol}</span>`
 }
@@ -584,9 +584,9 @@ function renderDiv(obj, myId="", field="", name="", idx=0){
         //return "SDFLKJSDFLKSJDFLKSJDF"
         let symbolSpanString = makeSymbolSpan('(...)', obj, 0, obj.readaloud(0))
         symbolSpanString = symbolSpanString.replace('separator0', 'foldellipses')
-        console.log('symbol span string in renderDiv', symbolSpanString)
-        let retString = `<div myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" class="block outerblock" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" role="button" onkeydown="handleKeyDown(event, this)"> ${symbolSpanString}</div>`
-        console.log('returning:', retString)
+        //console.log('symbol span string in renderDiv', symbolSpanString)
+        let retString = `<div role="presentation" tabindex="0" myId="${obj.id}" id="${obj.id}" onfocus="amSelecting(this)" class="block outerblock" aria-describedby="${obj.id}.readaloud" aria-labelledby="${obj.id}.readaloud" role="button" onkeydown="handleKeyDown(event, this)"> ${symbolSpanString}</div>`
+        //console.log('returning:', retString)
         return  retString
     }
 
@@ -662,8 +662,11 @@ function amSelecting(input){
 
     if(focusOn){
         let fieldNum = input.getAttribute('fieldNum')
-        inputFields[fieldNum].setCaret(focusOn, focusOn)
-        input.removeAttribute('focusOn')
+        // some input fields might erroneously have a focusOn
+        if(fieldNum && inputFields[fieldNum]){
+            inputFields[fieldNum].setCaret(focusOn, focusOn)
+            input.removeAttribute('focusOn')
+        }
     }
 
     if(selected){
@@ -1507,6 +1510,14 @@ async function handleKeyDown(event, input) {
     //console.log('cursor pos', cursorPosition)
 
     if(event.ctrlKey && event.key == '\\'){
+        if(event.altKey){
+            //console.log('ctrl+shift+\\')
+            readfriendly()
+            event.preventDefault()
+            event.stopPropagation()
+            return;
+        }
+
         const currentTimeMillis = new Date().getTime();
         
         if(currentTimeMillis - lastFolded < 500)
@@ -1522,7 +1533,7 @@ async function handleKeyDown(event, input) {
         console.log(node)
 
         console.log(node.id)
-        if(node.id != 'top'){
+        if(node.id != 'top.inside' && node.id != 'top'){
             console.log('node name:', node.name)
             // we should toggle fold
             if (node.name == 'folded'){
@@ -1531,6 +1542,8 @@ async function handleKeyDown(event, input) {
                 let original = unfold(node)
                 rerender(node.parent)
                 focusOnFind(original.id + '.' + original.focus)
+
+                console.log('focusing on:', original.id + '.' + original.focus)
             }else{
                 console.log('fold here')
                 // fold
@@ -1540,6 +1553,8 @@ async function handleKeyDown(event, input) {
                 let elem = await waitForElm(foldnode.id + '.foldellipses')
                 elem.focus()
             }
+        }else{
+            announceMessage("Cannot fold top level element")
         }
 
         event.preventDefault()
@@ -1781,24 +1796,47 @@ waitForElmCriteria(`top.inside`, e => e.getAttribute('fieldnum')).then(e => {inp
 
 
 ////// READ FRIENDLY MODE
+let inReadFriendly = false
+
 function readfriendly(){
     function traverse(node){
-        for(var field of node.fields){
-            if(node.data[field] && typeof node.data[field] != 'string'){
+        console.log('traverse:', node)
+        let toTraverse = node
+        if(node.name == 'folded')
+            toTraverse = node.original
+
+        for(var field of toTraverse.fields){
+            if(toTraverse.data[field] && typeof toTraverse.data[field] != 'string'){
                 // another node
-                traverse(node.data[field])
+                traverse(toTraverse.data[field])
             }
         }
 
         if(node.id != 'top' && node.id != 'top.inside'){
-            create_new_folded(node, node.parent, node.slot)
+            if(!inReadFriendly){
+                if(node.name != 'folded')
+                    create_new_folded(node, node.parent, node.slot)
+            }else{
+                if(node.name == 'folded')
+                    unfold(node)
+            }
         }
     }
 
-    settings.navStyle = 'linear'
+    if(!inReadFriendly)
+        settings.navStyle = 'linear'
+    else
+        settings.navStyle = 'equation'
+
     var navStyleSelect = document.getElementById("navStyle")
     navStyleSelect.selectedIndex = 1;
 
     traverse(expression)
     rerender(expression)
+
+    announceMessage("Read friendly settings toggled " + (inReadFriendly ? 'off' : 'on'))
+
+    focusOnFind('top.inside.prev')
+    
+    inReadFriendly = !inReadFriendly
 }

@@ -234,8 +234,12 @@ function normalize(x, y){
     return {left: x / Math.max(x, y), right: y / Math.max(x, y)}
 }
 
+function sqr(x){
+    return x * x
+}
+
 function announceMessageSpatial(message, relPos){
-    announceMessage(message, relPos.avg.x, (relPos.avg.y - 0.5) * -10)
+    announceMessage(message, relPos.avg.x, (relPos.avg.y - 0.5) * -15)
 }
 
 function announceMessage(message, pos = 0.5, pitchShift=0) {

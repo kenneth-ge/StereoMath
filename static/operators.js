@@ -399,7 +399,7 @@ function create_new_folded(original, parent, slot){
 
     ret.original = original
 
-    ret.readaloud = (x) => "folded " + original.name
+    ret.readaloud = (x) => "folded " + (original.name !== 'folded' ? original.name : 'expression')
     ret.render = (data) => original.render (original.data)
 
     for(var x of folded.fields){
