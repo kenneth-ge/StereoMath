@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
@@ -21,5 +22,8 @@
     "ejs": "^3.1.9",
     "express": "^4.21.1",
     "web-audio-api": "^0.2.2"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
   }
 }

@@ -280,3 +280,12 @@ function putInBuffer(text){
 function closeBuffer(){
     //document.getElementById("buffer").style.display = 'none'
 }
+
+/* Function to announce message if simulating remote TTS */
+function sayIfSim(string){
+    if(settings['useRemoteTTS'] == 'true'){
+        announceMessage(string)
+    }else{
+        console.log("Don't say because not sim")
+    }
+}

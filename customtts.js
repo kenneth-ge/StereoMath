@@ -1,25 +1,39 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 
-const audioProcess = spawn('..\\piper\\piper.exe', 
-    ['--model ..\\piper\\en_US-hfc_male-medium.onnx', '--output-raw', '--config ..\\piper\\en_US-hfc_male-medium.json'],
-    {stdio: "pipe", shell: true});
+let audioProcess = undefined
+let resMap = new Map()
 
-audioProcess.stdin
-audioProcess.stdin.setEncoding('ascii');
+let audioBuffer = Buffer.alloc(0);
 
-audioProcess.stderr.pipe(process.stderr)
+let { Mutex } = require('async-mutex');
 
-const { Mutex } = require('async-mutex');
-
-const mutex = new Mutex();
+let mutex = new Mutex();
 
 let counter = 0
 let currFinished = 0
 
-let resMap = new Map()
+function resetPiperTTS(){
+    audioProcess = spawn('..\\piper\\piper.exe', 
+        ['--model ..\\piper\\en_US-hfc_male-medium.onnx', '--output-raw', '--config ..\\piper\\en_US-hfc_male-medium.json'],
+        {stdio: "pipe", shell: true});
+    
+    audioProcess.stdin
+    audioProcess.stdin.setEncoding('ascii');
+    
+    audioProcess.stderr.pipe(process.stderr)
 
-let audioBuffer = Buffer.alloc(0);
+    resMap.clear()
+
+    audioBuffer = Buffer.alloc(0);
+
+    counter = 0
+    currFinished = 0
+
+    mutex = new Mutex();
+}
+
+resetPiperTTS()
 
 let dataListener = async (data) => {
     //let release = await mutex.acquire()
@@ -87,5 +101,6 @@ async function synthesize(text, res) {
 }
 
 module.exports = {
-    synthesize
+    synthesize,
+    resetPiperTTS
 }

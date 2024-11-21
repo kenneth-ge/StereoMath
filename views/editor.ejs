@@ -22,7 +22,7 @@
     <body>
         <div id="buffer" class="buffer">
             <textarea class="bufferTxt" id="bufferTxt"></textarea>
-            <button onclick="closeBuffer()">Close</button>
+            <button onclick="closeBuffer()" onfocus="sayIfSim('close')">Close</button>
         </div>
 
         <form id="myForm">
@@ -75,38 +75,39 @@
             <div class="popup">
                 <h2>Settings Menu</h2>
                     <label for="verbosity">Verbosity:</label>
-                    <select id="verbosity" name="verbosity">
+                    <select id="verbosity" name="verbosity" onfocus="sayIfSim('Change verbosity level, current is ' + settings['verbosity'])">
                         <option value="low">Low</option>
                         <option value="high">High</option>
                     </select><br><br>
 
                     <label for="navStyle">Navigation Style:</label>
-                    <select id="navStyle" name="navStyle">
+                    <select id="navStyle" name="navStyle" onfocus="sayIfSim('change navigation style, current is ' + settings['navStyle'])">
                         <option value="equation">Equation</option>
                         <option value="linear">Linear</option>
                     </select><br><br>
 
                     <label for="playOn">Play Spatial Nav On:</label>
-                    <select id="playOn" name="playOn">
+                    <select id="playOn" name="playOn" onfocus="sayIfSim('change where spatial audio gets played, currently plays on ' + settings['playOn'])">
                         <option value="anywhere">Anywhere</option>
                         <option value="field">Input Field</option>
                     </select><br><br>
 
                     <label for="useRemoteTTS">Use Remote Spatial TTS:</label>
-                    <select id="useRemoteTTS" name="useRemoteTTS">
+                    <select id="useRemoteTTS" name="useRemoteTTS" onfocus="sayIfSim('change whether to use remote TTS, currently set to ' + settings['useRemoteTTS'])">
                         <option value="true">true</option>
                         <option value="false">false</option>
                     </select><br><br>
 
-                    <!--<button type="submit">Save</button> --><button onclick="closesettings()">Close Menu</button>
+                    <!--<button type="submit">Save</button> --><button onclick="closesettings()"  onfocus="sayIfSim('close menu')">Close Menu</button>
             </div>
         </div>
 
-        <button id="settingsbtn" type="button" onclick="opensettings()">Settings</button>
-        <button id="settingsbtn" type="button" onclick="readfriendly()">Toggle Read-Friendly Settings</button>
-        <button id="getlatex" type="button" onclick="getlatex()">Get Latex</button>
-        <button onclick="save(expression)">Save Expr</button>
-        <button id="loadExpr" onclick="loadFile()">Load Expr</button>
+        <button id="settingsbtn" type="button" onclick="opensettings()"  onfocus="sayIfSim('open settings')">Settings</button>
+        <button id="settingsbtn" type="button" onclick="readfriendly()"  onfocus="sayIfSim('toggle read-friendly settings')">Toggle Read-Friendly Settings</button>
+        <button id="getlatex" type="button" onclick="getlatex()" onfocus="sayIfSim('copy generated latex')">Get Latex</button>
+        <button onclick="save(expression)" onfocus="sayIfSim('save expression')">Save Expr</button>
+        <button id="loadExpr" onclick="loadFile()"  onfocus="sayIfSim('load expression')">Load Expr</button>
+        <button id="resetTTS" onclick="resetTTS()"  onfocus="sayIfSim('reset TTS')">Reset TTS</button>
 
         <input type="file" id="fileInput" style="display:none;">
         

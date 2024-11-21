@@ -38,6 +38,7 @@ function init(){
         select.addEventListener('change', function (event) {
             settings[event.target.name] = event.target.value
             console.log(`${event.target.name} changed to ${event.target.value}`);
+            announceMessage(`${event.target.name} changed to ${event.target.value}`)
         });
     });
 }

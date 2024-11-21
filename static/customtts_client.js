@@ -25,3 +25,8 @@ async function playAudio(text, left=1, right=1, pitchShift=0){
 
     player.feed(new Int16Array(data), pitchShift)
 }
+
+function resetTTS(){
+    fetch('/reset_tts')
+    saved.clear()
+}
