@@ -14,8 +14,8 @@ let counter = 0
 let currFinished = 0
 
 function resetPiperTTS(){
-    audioProcess = spawn('..\\piper\\piper.exe', 
-        ['--model ..\\piper\\en_US-hfc_male-medium.onnx', '--output-raw', '--config ..\\piper\\en_US-hfc_male-medium.json'],
+    audioProcess = spawn('.\\piper\\piper.exe', 
+        ['--model .\\piper\\en_US-hfc_male-medium.onnx', '--output-raw', '--config .\\piper\\en_US-hfc_male-medium.json'],
         {stdio: "pipe", shell: true});
     
     audioProcess.stdin
