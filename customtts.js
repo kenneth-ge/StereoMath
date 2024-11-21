@@ -1,8 +1,8 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 
-const audioProcess = spawn('../piper/piper', 
-    ['--model ../piper/en_US-hfc_male-medium.onnx', '--output-raw', '--config ../piper/en_US-hfc_male-medium.json'],
+const audioProcess = spawn('..\\piper\\piper.exe', 
+    ['--model ..\\piper\\en_US-hfc_male-medium.onnx', '--output-raw', '--config ..\\piper\\en_US-hfc_male-medium.json'],
     {stdio: "pipe", shell: true});
 
 audioProcess.stdin

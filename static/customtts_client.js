@@ -20,8 +20,6 @@ async function playAudio(text, left=1, right=1, pitchShift=0){
         
         saved.set(text, data)
     }
-    
-    console.log('play data:', data)
 
     player.volume(left, right)
 

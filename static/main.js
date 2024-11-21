@@ -1776,6 +1776,11 @@ async function handleKeyDown(event, input) {
 function getlatex(){
     let text = (renderLaTeX(expression))
 
+    let symbols = [['…', '\\ldots'], ['δ', '\\delta'], ['Δ', '\\Delta'], ['γ', '\\gamma'], ['Γ', '\\Gamma'], ['°', '\\degree'], ['Φ', '\\Phi'], ['φ', '\\phi']]
+    for (let [symbol, latex] of symbols) {
+        text = text.replace(symbol, latex)
+    }
+
     navigator.clipboard.writeText(text)
         .then(() => {
             announceMessage("Copied LaTeX to clipboard!")
