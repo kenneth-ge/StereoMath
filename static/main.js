@@ -182,8 +182,20 @@ function handleSpatial(event){
         if(elem[0][0] < Infinity){
             let topInput = topInputs[elem[1]]
             let inputField = getField(topInput)
-            focusElem(topInput)
             let relPos = calculateRelativePos(topInput)
+
+            let newpos = {x: spatialCursor.x, y: spatialCursor.y}
+            // only move in one direction/avenue at a time
+            if(event.key == 'ArrowDown' || event.key == 'ArrowUp'){
+                // update y coord of spatial cursor
+                newpos.y = relPos.avg.y
+            }
+            if(event.key == 'ArrowLeft' || event.key == 'ArrowRight') {
+                // update x coord of spatial cursor
+                newpos.x = relPos.avg.x
+            }
+
+            focusElem(topInput)
             if(inputField){
                 inputField.witholdAnnounce()
                 announceMessageSpatial(inputField.getValue().replace('…', ' ellipses '), relPos)
@@ -191,13 +203,7 @@ function handleSpatial(event){
                 //announceMessageSpatial(topInput.getAttribute('custom-label'), relPos)
             }
 
-            if(event.key == 'ArrowDown' || event.key == 'ArrowUp'){
-                // update y coord of spatial cursor
-                spatialCursor.y = relPos.avg.y
-            }else{
-                // update x coord of spatial cursor
-                spatialCursor.x = relPos.avg.x
-            }
+            spatialCursor = newpos
             updateSpatialCursor()
         }
 
@@ -1612,7 +1618,7 @@ async function handleKeyDown(event, input) {
 
     /** Arrow keys */
     if(event.key == 'ArrowUp' || event.key == 'ArrowDown' || event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
-        if(spatialNav != "OFF"){
+        if(spatialNav != "OFF" || event.key == 'ArrowUp' || event.key == 'ArrowDown'){
             handleSpatial(event)
             return
         }
