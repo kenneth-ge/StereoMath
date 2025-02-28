@@ -1,6 +1,14 @@
-# Math Editor
+# StereoMath: An Accessible and Musical Equation Editor (Published ASSETS '24)
 
-To run, make sure you have Node.js installed. Then, run `node index.js`, and navigate to http://localhost:3000/. Enjoy!
+Authors: Kenneth Ge (kenneth-ge), Prof. JooYoung Seo
+
+Please read our paper here: [open access paper](https://arxiv.org/abs/2501.01404), [official ACM publication](https://dl.acm.org/doi/10.1145/3663548.3688487)
+
+[![demo video, with audio narration](https://img.youtube.com/vi/hJH8CvrOmMI/0.jpg)](https://www.youtube.com/watch?v=hJH8CvrOmMI)
+
+Licensed under MIT-no-AI license. 
+
+To run, make sure you have Node.js installed. Then, run `node index.js`, and navigate to http://localhost:3000/. Electron build also available with no dependencies in releases. Enjoy!
 
 Key combinations:
 * CTRL + \\ to fold/unfold
